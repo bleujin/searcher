@@ -3,7 +3,6 @@ package net.bleujin.searcher.search;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -51,9 +50,14 @@ public class SearchSession {
 	}
 	
 	SearchResponse search(SearchRequest srequest) throws IOException {
-		long startTime = System.currentTimeMillis() ; 
-		TopFieldDocs sresult = isearcher.search(srequest.query(), srequest.maxResult(), srequest.sort());
-		return SearchResponse.create(this, srequest, sresult.scoreDocs, sresult.totalHits.value, startTime) ;
+		long startTime = System.currentTimeMillis() ;
+		sconfig.emitPreListener(srequest);
+		
+		TopFieldDocs sresult = isearcher.search(srequest.query(), srequest.limit(), srequest.sort());
+		SearchResponse sres = SearchResponse.create(this, srequest, sresult.scoreDocs, sresult.totalHits.value, startTime);
+
+		sconfig.emitPostListener(sres);
+		return sres ;
 	}
 	
 	

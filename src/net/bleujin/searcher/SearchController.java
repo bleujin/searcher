@@ -47,6 +47,16 @@ public class SearchController {
 		dir.close();
 	}
 
+	public void destroySelf() {
+		try {
+			dir.close();
+		} catch (IOException ignore) {
+			ignore.printStackTrace();
+		}
+	}
+
+
+	
 	public void begin(String string) {
 
 	}

@@ -3,6 +3,7 @@ package net.bleujin.searcher.search;
 import java.io.IOException;
 import java.util.List;
 
+import org.apache.ecs.xml.XML;
 import org.apache.lucene.search.ScoreDoc;
 
 import net.bleujin.searcher.common.ReadDocument;
@@ -30,11 +31,11 @@ public class SearchResponse {
 		return new SearchResponse(ssession, sreq, makeDocument(sreq, docs), totalCount, startTime);
 	}
 
-	private static List<Integer> makeDocument(SearchRequest sreq, ScoreDoc[] docs) {
+	private static List<Integer> makeDocument(SearchRequest sreq, ScoreDoc[] docIds) {
 		List<Integer> result = ListUtil.newList();
 
-		for (int i = sreq.skip(); i < Math.min(sreq.limit(), docs.length); i++) {
-			result.add(docs[i].doc);
+		for (int i = sreq.skip(); i < Math.min(sreq.limit(), docIds.length); i++) {
+			result.add(docIds[i].doc);
 		}
 		
 		return result;
@@ -58,6 +59,28 @@ public class SearchResponse {
 		return this.totalCount;
 	}
 
+	public long elapsedTime() {
+		return endTime - startTime;
+	}
+
+	public SearchRequest request() {
+		return sreq;
+	}
 	
+
+	public XML toXML() {
+		XML result = new XML("response");
+
+		result.addAttribute("startTime", String.valueOf(startTime));
+		result.addAttribute("elapsedTime", String.valueOf(elapsedTime()));
+		result.addAttribute("totalCount", String.valueOf(totalCount()));
+		result.addAttribute("size", String.valueOf(docIds.size()));
+
+		return result;
+	}
+
+	public String toString() {
+		return toXML().toString();
+	}
 
 }

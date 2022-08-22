@@ -23,7 +23,7 @@ public class TestFirst extends TestCase {
 
 	@Override
 	public void setUp() throws Exception {
-		this.sdc = new SearchControllerConfig().build(OpenMode.CREATE_OR_APPEND) ;
+		this.sdc = SearchControllerConfig.newRam().build(OpenMode.CREATE_OR_APPEND) ;
 	}
 	
 	public void tearDown() throws Exception  {

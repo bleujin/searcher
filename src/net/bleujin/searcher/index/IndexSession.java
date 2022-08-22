@@ -37,7 +37,9 @@ public class IndexSession {
 	}
 
 	public static IndexSession create(SearchController scontroller, IndexConfig iconfig) throws IOException {
-		IndexWriterConfig iwc = new IndexWriterConfig(iconfig.analyzer());
+		IndexWriterConfig iwc = new IndexWriterConfig(iconfig.indexAnalyzer());
+		iconfig.param(iwc) ;
+		
 		iwc.setOpenMode(scontroller.openMode());
 		// iwc.setRAMBufferSizeMB(256.0);
 		IndexWriter iwriter = new IndexWriter(scontroller.dir(), iwc);

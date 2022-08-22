@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<project name="Make FatJar(experimental)" default="search930" basedir=".">
+<!-- ====================================================================== 
+     2022. 8. 21. 오전 10:59:20                                                        
+
+     project search core     
+     description
+                   
+     by bleujin(bleujin@gmail.com)                                                                
+     ====================================================================== -->
+    <!--
+    -->
+    <!-- uncomment the above lines to use ANT outside of Eclipse -->
+	
+	<property name="baseDir" value="." />
+	<property name="targetDir" value="../lib" />
+	
+    <target name="search930">
+    	<delete file="${targetDir}/search930_fat.jar"></delete>
+        <jar destfile="${targetDir}/search930_fat.jar">
+        	<zipgroupfileset dir="${basedir}\search930" id="id">
+			    <include name="*.jar"/>
+			    <exclude name="META-INF/*.SF"/>
+			</zipgroupfileset>
+        </jar>
+    </target>
+	
+	
+    <target name="search_util">
+    	<delete file="${targetDir}/search_util_fat.jar"></delete>
+        <jar destfile="${targetDir}/search_util_fat.jar">
+        	<zipgroupfileset dir="${basedir}\search_util" id="id">
+	        	<include name="jericho-html-3.1.jar"/> 
+	        	<include name="ecs-1.4.2.jar"/> 
+	        	<include name="tidy.jar"/> 
+	        	<include name="htmllexer.jar"/> 
+	        	<include name="htmlparser.jar"/> 
+       		</zipgroupfileset>
+        </jar>
+    </target>
+
+
+</project>

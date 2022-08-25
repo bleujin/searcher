@@ -13,23 +13,33 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
+import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
+import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexableField;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Sets;
 
 import net.bleujin.searcher.common.MyField.MyFieldType;
 import net.bleujin.searcher.index.IndexSession;
 import net.ion.framework.parse.gson.JsonElement;
 import net.ion.framework.parse.gson.JsonObject;
 import net.ion.framework.parse.gson.JsonUtil;
+import net.ion.framework.util.ArrayUtil;
+import net.ion.framework.util.DateUtil;
+import net.ion.framework.util.Debug;
 import net.ion.framework.util.HashFunction;
+import net.ion.framework.util.ListUtil;
+import net.ion.framework.util.MapUtil;
 import net.ion.framework.util.ObjectId;
+import net.ion.framework.util.SetUtil;
 import net.ion.framework.util.StringUtil;
 
 public class WriteDocument extends AbDocument {
@@ -38,32 +48,31 @@ public class WriteDocument extends AbDocument {
 	private String docId;
 	private Action action = Action.Unknown;
 
-	private ArrayListMultimap<String, MyField> fields = ArrayListMultimap.create() ;
+	private Map<String, MyField> fields = MapUtil.newCaseInsensitiveMap() ;
 	private IndexSession isession;
 	private boolean newDoc = false;
-	private float boost = 1.0f ;
-	private Document doc;
-	private boolean replaceField;
 	
 	public WriteDocument(IndexSession indexSession, String docId) {
-		this(indexSession, docId, new Document(), false) ;
-	}
-	public WriteDocument(IndexSession indexSession, String docId, Document doc) {
-		this(indexSession, docId, doc, false) ;
+		this(indexSession, docId, (Document)null) ;
 	}
 	
-	public WriteDocument(IndexSession indexSession, String docId, Document doc, boolean replaceField) {
+	public WriteDocument(IndexSession indexSession) {
+		this(indexSession, new ObjectId().toString(), (Document)null) ;
+	}
+
+	public WriteDocument(IndexSession indexSession, String docId, Document rdoc) {
 		this.isession = indexSession ;
 		this.docId = docId;
-		this.doc = (doc == null) ? new Document() : doc;
-		
-		this.replaceField = replaceField;
+		if (rdoc != null) {
+			rdoc.getFields().forEach(ifield -> {
+				if (IKeywordField.Field.reservedId(ifield.name())) return ;
+				fields.put(ifield.name(), MyField.forWriteDoc(ifield)) ;
+			});
+		}
 	}
 
-	public WriteDocument(IndexSession indexSession) {
-		this(indexSession, new ObjectId().toString(), new Document(), true) ;
-	}
 
+	
 	public String idValue() {
 		return docId;
 	}
@@ -72,36 +81,49 @@ public class WriteDocument extends AbDocument {
 		return newDoc ;
 	}
 	
-	public WriteDocument boost(float boost){
-		this.boost = boost ;
-		return this ;
-	}
+	
+	
 	
 	public Document toLuceneDoc() {
+		Document doc = new Document() ;
 		
 		FieldIndexingStrategy strategy = isession.fieldIndexingStrategy(); 
 		StringBuilder bodyBuilder = new StringBuilder(512);
 		bodyBuilder.append(docId + " ") ;
 
-		for(IndexableField field : doc.getFields()){
-			bodyBuilder.append(field.stringValue() + " ") ;
+		// make bodyBuilder from doc
+		Set<String> fieldNames = SetUtil.newSet() ; 
+		doc.getFields().forEach(ifield -> fieldNames.add(ifield.name()));
+		for(String fieldName: fieldNames){
+			bodyBuilder.append(doc.get(fieldName) + " ") ;
 		}
 
 		for (MyField field : fields.values()) {
 			if (field == null || isReservedField(field.name()))
 				continue;
+			
+			isession.indexConfig().fieldTypeMap().entrySet().forEach(entry -> {
+				if (StringUtil.equalsIgnoreCase(field.name(), entry.getKey())) {
+					field.changeType(entry.getValue()) ;
+				}
+			});
+			
 			field.indexField(strategy, doc) ;
 			
 			if (isession.handleBody() && (!field.ignoreBody())) bodyBuilder.append(field.stringValue() + " ");
 		}
 
-		MyField.keyword(DocKey, idValue(), Store.YES).indexField(strategy, doc);
 		final String bodyString = bodyBuilder.toString();
-		MyField.number(BodyHash, HashFunction.hashGeneral(bodyString)).indexField(strategy, doc);
-		MyField.number(TIMESTAMP, System.currentTimeMillis()).indexField(strategy, doc);
+		
+		MyField.keyword(DocKey, idValue()).indexField(strategy, doc);
+		MyField.noIndex(BodyHash, ""+HashFunction.hashGeneral(bodyString)).indexField(strategy, doc);
+		MyField.noIndex(TIMESTAMP, ""+System.currentTimeMillis()).indexField(strategy, doc);
+		if (isession.handleBody()) MyField.notext(ISALL_FIELD, bodyString).indexField(strategy, doc);
 
-		if (isession.handleBody()) MyField.text(ISALL_FIELD, bodyString, Store.NO).indexField(strategy, doc);
-
+		
+//		doc.forEach(ifield ->{
+//			Debug.line(fields.size(), ifield.name(), ifield.stringValue(), ifield.numericValue(), ifield.fieldType().docValuesType()) ;
+//		});
 		
 		return doc;
 	}
@@ -136,7 +158,7 @@ public class WriteDocument extends AbDocument {
 
 	
 	public String asString(String name) {
-		return firstField(name) == null ? null : firstField(name).stringValue() ;
+		return StringUtil.toString(get(name)) ;
 	}
 
 	@Deprecated
@@ -149,9 +171,9 @@ public class WriteDocument extends AbDocument {
 		return add(JsonObject.fromObject(values));
 	}
 
-	public WriteDocument unknown(Map<String, String> values) {
-		for (Entry<String, String> entry : values.entrySet()) {
-			this.add(new MyField(new TextField(entry.getKey(), entry.getValue(), Store.NO), MyFieldType.Unknown)) ;
+	public WriteDocument unknown(Map<String, Object> values) {
+		for (Entry<String, Object> entry : values.entrySet()) {
+			this.add(MyField.unknown(entry.getKey(), entry.getValue())) ;
 		}
 		return this ;
 	}
@@ -193,22 +215,15 @@ public class WriteDocument extends AbDocument {
 		add(MyField.text(fieldName, value));
 		return this;
 	}
-	
-	public WriteDocument stext(String fieldName, String value) {
-		if (StringUtil.isBlank(value)) return this ;
-		add(MyField.text(fieldName, value, Store.YES));
-		return this;
-	}
 
-	public WriteDocument vtext(String fieldName, String value) {
-		if (StringUtil.isBlank(value)) return this ;
-		add(MyField.vtext(fieldName, value, Store.YES));
-		
-		return this;
-	}
 
 
 	public WriteDocument number(String fieldName, long value) {
+		add(MyField.number(fieldName, value));
+		return this;
+	}
+
+	public WriteDocument number(String fieldName, Long value) {
 		add(MyField.number(fieldName, value));
 		return this;
 	}
@@ -229,33 +244,19 @@ public class WriteDocument extends AbDocument {
 	}
 
 	public WriteDocument add(MyField field) {
-		if (replaceField) {
-//			fields.removeAll(field.name()) ;
-			doc.removeField(field.name());
-		}
 		fields.put(field.name(), field);
 		return this;
-	}
-	
-	@Deprecated
-	public WriteDocument addField(Field field){
-		doc.add(field);
-		return this ;
 	}
 
 	public Collection<MyField> fields() {
 		return fields.values();
 	}
 
-	public MyField firstField(String name){
-		return fields.get(name).size() < 1 ? null : fields.get(name).get(0)  ;  
-	}
-	
 	public void removeField(String name) {
-		fields.removeAll(name);
+		fields.remove(name);
 	}
 
-	public List<MyField> fields(String name) {
+	public MyField get(String name) {
 		return fields.get(name) ;
 	}
 

@@ -12,7 +12,9 @@ import org.apache.lucene.search.Sort;
 
 import net.bleujin.searcher.common.ReadDocument;
 import net.ion.framework.db.Page;
+import net.ion.framework.util.ListUtil;
 import net.ion.framework.util.MapUtil;
+import net.ion.framework.util.StringUtil;
 
 
 public class SearchRequest {
@@ -22,6 +24,7 @@ public class SearchRequest {
 	private int skip  = 0 ;
 	private int offset = 100;
 	private Map<String, Object> param = MapUtil.newCaseInsensitiveMap() ;
+	private List<String> sortExpression = ListUtil.newList();
 
 	SearchRequest(SearchSession ssession, Query query) {
 		this.ssession = ssession ;
@@ -39,12 +42,17 @@ public class SearchRequest {
 		return docs.get(0) ;
 	}
 
+	public SearchResponse find() throws IOException {
+		return ssession.search(this) ;
+	}
+
+	
 	public int offset() {
 		return offset;
 	}
 
 	public int skip() {
-		return 0;
+		return skip;
 	}
 
 	public int limit() {
@@ -80,12 +88,11 @@ public class SearchRequest {
 	}
 	
 	
+	// TODO
 	public Sort sort() {
-		return Sort.INDEXORDER;
-	}
-
-	public SearchResponse find() throws IOException {
-		return ssession.search(this) ;
+		return Sort.RELEVANCE ;
+//		if (sortExpression.size() == 0) return Sort.RELEVANCE ;
+//		return new Sort(SortExpression.parse(indexFieldType, sortExpression.toArray(new String[0]))) ;	
 	}
 
 	
@@ -93,7 +100,7 @@ public class SearchRequest {
 	public XML toXML() {
 		XML request = new XML("request");
 		request.addElement(new XML("query").addElement(query.toString()));
-//		request.addElement(new XML("sort").addElement(sortExpression.toString()));
+		request.addElement(new XML("sort").addElement(sortExpression.toString()));
 
 		XML page = new XML("page");
 		page.addAttribute("skip", String.valueOf(skip()));
@@ -114,5 +121,34 @@ public class SearchRequest {
 	public String toString() {
 		return toXML().toString() ;
 	}
+	
+	public SearchRequest sort(String expr){
+		if (StringUtil.isBlank(expr)) return this ;
+		for (String e : StringUtil.split(expr, ",")) {
+			sortExpression.add(e) ;
+		}
+		return this ;
+	}
+
+	public SearchRequest ascending(String field) {
+		sortExpression.add(field);
+		return this ;
+	}
+
+	public SearchRequest descending(String field) {
+		sortExpression.add(field + " desc");
+		return this ;
+	}
+
+	public SearchRequest ascendingNum(String field) {
+		sortExpression.add(field + " _number");
+		return this ;
+	}
+
+	public SearchRequest descendingNum(String field) {
+		sortExpression.add(field + " _number desc");
+		return this ;
+	}
+
 
 }

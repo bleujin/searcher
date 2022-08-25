@@ -12,7 +12,7 @@ public interface IndexFieldType {
 		private Set<String> numericField = SetUtil.newSyncSet();
 
 		public void decideField(MyField field) {
-			if (field.myFieldtype() == MyFieldType.Number || field.myFieldtype() == MyFieldType.Double) {
+			if (field.myFieldtype() == MyFieldType.Number) {
 				numericField.add(field.name());
 			}
 		}

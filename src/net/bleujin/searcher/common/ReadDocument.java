@@ -49,7 +49,7 @@ public class ReadDocument extends AbDocument {
 	}
 
 	public String reserved(String reservedId){
-		if ( ArrayUtil.contains(IKeywordField.KEYWORD_FIELD, reservedId)) {
+		if ( IKeywordField.Field.reservedId(reservedId)) {
 			return doc.get(reservedId) ;
 		} else {
 			throw new IllegalArgumentException("not reserved field Id : " + reservedId );
@@ -94,10 +94,6 @@ public class ReadDocument extends AbDocument {
 		return doc.getFields(name) ;
 	}
 
-	private String[] asStrings(String name) {
-		return doc.getValues(name);
-	}
-
 	public void write(MyDocumentTemplate mw){
 		mw.startDoc(this) ;
 		List<IndexableField> fields = fields() ;
@@ -119,20 +115,11 @@ public class ReadDocument extends AbDocument {
 		Set<String> set = SetUtil.newSet() ;
 		for (IndexableField field : doc.getFields()) {
 			if (IKeywordField.Field.reservedId(field.name())) continue ;
-			if (field.name().endsWith(MyField.SORT_POSTFIX)) continue ;
 			set.add(field.name()) ;
 		}
 		return set.toArray(new String[0]);
 	}
 	
-	public String[] getSortedFieldNames() {
-		Set<String> set = SetUtil.newSet() ;
-		for (IndexableField field : doc.getFields()) {
-			if (! field.name().endsWith(MyField.SORT_POSTFIX)) continue ;
-			set.add(field.name()) ;
-		}
-		return set.toArray(new String[0]);
-	}
 
 	public Document toLuceneDoc() {
 		return doc;
@@ -145,10 +132,6 @@ public class ReadDocument extends AbDocument {
 	public String toString(){
 		ToStringHelper helper = Objects.toStringHelper(this.getClass());
 		helper.addValue(idValue()) ;
-		for (String sortName : getSortedFieldNames()) {
-			String fieldName = StringUtil.substringBefore(sortName, MyField.SORT_POSTFIX);
-			helper.add(fieldName, getField(fieldName)) ; //   + "[" + (fieldType.indexed() ? "I" : "") +  (fieldType.stored() ? "S" : "") +  (fieldType.tokenized() ? "T" : "") + "]"
-		}
 		return helper.toString() ;
 	}
 

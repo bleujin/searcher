@@ -7,6 +7,7 @@ import org.apache.ecs.xml.XML;
 import org.apache.lucene.search.ScoreDoc;
 
 import net.bleujin.searcher.common.ReadDocument;
+import net.ion.framework.util.Debug;
 import net.ion.framework.util.ListUtil;
 
 public class SearchResponse {
@@ -81,6 +82,38 @@ public class SearchResponse {
 
 	public String toString() {
 		return toXML().toString();
+	}
+
+	public void debugPrint() {
+		eachDoc(EachDocHandler.DEBUG);
+	}
+	
+	public void debugPrint(final String... fields) throws IOException {
+		eachDoc(new EachDocHandler<Void>() {
+
+			@Override
+			public <T> T handle(EachDocIterator iter) {
+				while (iter.hasNext()) {
+					ReadDocument next = iter.next();
+					List list = ListUtil.newList();
+					list.add(next.toString());
+					for (String field : fields) {
+						list.add(next.asString(field));
+					}
+					Debug.line(list.toArray(new Object[0]));
+				}
+				return null;
+			}
+		});
+	}
+	
+	public <T> T eachDoc(EachDocHandler<T> handler) {
+		EachDocIterator iter = new EachDocIterator(ssession, sreq, docIds);
+		return handler.handle(iter);
+	}
+
+	public int size() {
+		return Math.min(docIds.size(), sreq.offset());
 	}
 
 }

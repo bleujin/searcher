@@ -3,29 +3,36 @@ package net.bleujin.searcher.search;
 import java.io.IOException;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.DirectoryReader;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopFieldDocs;
 
 import net.bleujin.searcher.SearchController;
 import net.bleujin.searcher.common.ReadDocument;
+import net.bleujin.searcher.reader.InfoReader;
+import net.ion.framework.util.ArrayUtil;
+import net.ion.framework.util.StringUtil;
 
 public class SearchSession {
 
 	private SearchController sc;
 	private SearchConfig sconfig;
 	private IndexSearcher isearcher;
-	private QueryParser qparser;
+	private static final Query ALL_QUERY = new MatchAllDocsQuery() ;
 
 	private SearchSession(SearchController sc, IndexSearcher isearcher, SearchConfig sconfig) throws IOException {
 		this.sc = sc ;
 		this.sconfig = sconfig ;
 		this.isearcher = isearcher ;
-		this.qparser = sconfig.queryParser();
+		
 	}
 
 	public static SearchSession create(SearchController sc, IndexSearcher isearcher, SearchConfig sconfig) throws IOException {
@@ -43,10 +50,15 @@ public class SearchSession {
 
 	public SearchRequest createRequest(String query) throws IOException {
 		try {
-			return new SearchRequest(this, qparser.parse(query));
+			return new SearchRequest(this, parseQuery(query));
 		} catch (ParseException e) {
 			throw new IOException(e) ;
 		}
+	}
+
+	private Query parseQuery(String query) throws ParseException {
+		if (StringUtil.isBlank(query)) return ALL_QUERY ;
+		return sconfig.queryParser().parse(query);
 	}
 	
 	SearchResponse search(SearchRequest srequest) throws IOException {
@@ -75,4 +87,17 @@ public class SearchSession {
 		return isearcher.hashCode();
 	}
 
+	public ReadDocument doc(int docId) throws IOException {
+		return ReadDocument.loadDocument(isearcher.doc(docId));
+	}
+
+	
+	public InfoReader infoReader() throws IOException {
+		return InfoReader.create(isearcher.getIndexReader(), DirectoryReader.open(sc.dir())) ;
+	}
+
+	public IndexReader indexReader() {
+		return isearcher.getIndexReader() ;
+	}
+	
 }

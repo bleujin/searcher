@@ -1,17 +1,19 @@
 package net.bleujin.searcher.common;
 
+import java.text.ParseException;
 import java.util.Date;
 
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.FieldType;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexOptions;
+import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexableFieldType;
-import org.apache.lucene.util.BytesRef;
 
 import net.ion.framework.util.DateUtil;
 import net.ion.framework.util.NumberUtil;
@@ -21,23 +23,45 @@ import net.ion.framework.util.StringUtil;
 public class MyField {
 
 	public enum MyFieldType {
-		Keyword, Number, Double, Date, Text, Unknown, Byte
+		Keyword, Number, Date, Text
 	}
 	
-	public final static String SORT_POSTFIX = "_for_sort";
-	
-	private boolean ignoreBody;
-
-	private final Field ifield;
-	private MyFieldType mtype; 
+	private IndexableField ifield;
+	private MyFieldType mtype;
+	private boolean ignoreBody; 
 
 	public MyField(Field ifield, MyFieldType mtype){
 		this.ifield = ifield ;
 		this.mtype = mtype ;
 	}
+
+	public static MyField forWriteDoc(IndexableField ifield) {
+		if (ifield.fieldType().omitNorms()) { // keyword or dateformat
+			if (isDateFormat(ifield.stringValue())) {
+				return keyword(ifield.name(), ifield.stringValue()) ;
+			} else {
+				return date(ifield.name(), toDateString(ifield.stringValue())) ;
+			}
+		} else { // number or text
+			if (ifield.numericValue() == null) { // text
+				return text(ifield.name(), ifield.stringValue()) ;
+			} else { // number
+				return number(ifield.name(), ifield.numericValue().longValue()) ; 
+			}
+		}
+	}
 	
-
-
+	
+	private static Date toDateString(String val) {
+		 try {
+			return DateUtil.stringToDate(val) ;
+		} catch (ParseException e) {
+			return new Date() ;
+		}
+	}
+	
+	
+	
 	public String name() {
 		return ifield.name() ;
 	}
@@ -45,6 +69,21 @@ public class MyField {
 		return ifield.stringValue() ;
 	}
 	
+	
+	public MyField changeType(MyFieldType mtype) {
+		if (mtype == MyFieldType.Number) {
+			this.ifield = new NumericDocValuesField(ifield.name(), Long.parseLong(ifield.stringValue())) ; 
+		} else if (mtype == MyFieldType.Keyword) {
+			this.ifield = new StringField(ifield.name(), ifield.stringValue(), Store.YES) ;
+		} else if (mtype == MyFieldType.Text) {
+			this.ifield = new TextField(ifield.name(), ifield.stringValue(), Store.YES) ;
+		} else if (mtype == MyFieldType.Date) {
+			this.ifield = new StringField(ifield.name(), ifield.stringValue(), Store.YES) ;
+		}
+			
+		this.mtype = mtype ;
+		return this ;
+	}
 	
 	public IndexableFieldType fieldType(){
 		return ifield.fieldType() ;
@@ -54,16 +93,6 @@ public class MyField {
 		return mtype ;
 	}
 
-	public boolean ignoreBody(){
-		return ignoreBody ;
-	}
-	
-	public MyField ignoreBody(boolean ignore) {
-		this.ignoreBody = ignore ;
-		return this;
-	}
-	
-
 	
 	
 	public static MyField keyword(String name, String value) {
@@ -71,22 +100,23 @@ public class MyField {
 	}
 
 	public static MyField number(String name, long value) {
-		return new MyField(new StoredField(name, value), MyFieldType.Number) ;
+		return new MyField(new NumericDocValuesField(name, value), MyFieldType.Number) ;
 	}
 	
-	public static MyField number(String name, double value) {
-		return new MyField(new StoredField(name, value), MyFieldType.Double);
-	}
-
-	public static MyField number(String name, float value) {
-		return new MyField(new StoredField(name, 1.0D * value), MyFieldType.Double);
-	}
-
 	public static MyField number(String name, int value) {
-		return new MyField(new StoredField(name, value), MyFieldType.Number);
+		return new MyField(new NumericDocValuesField(name, value), MyFieldType.Number);
 	}
 
+	public static MyField text(String name, String value) {
+		return new MyField(new TextField(name, value, Store.YES), MyFieldType.Text);
+	}
+
+	public static MyField notext(String name, String value) {
+		return new MyField(new TextField(name, value, Store.NO), MyFieldType.Text);
+	}
+	
 	public static MyField date(String name, Date date){ 
+		if (date == null) throw new IllegalArgumentException(date + " is not dateformat") ;
 		return new MyField(new StringField(name, DateUtil.dateToString(date, "yyyyMMdd HHmmss"), Store.YES), MyFieldType.Date) ;
 	}
 
@@ -102,49 +132,8 @@ public class MyField {
 		return date(name, date) ;
 	}
 
-	public static MyField text(String name, String value) {
-		return new MyField(new TextField(name, value, Store.NO), MyFieldType.Text);
-	}
 
-	
-	private static final FieldType TYPE_VTEXT = new FieldType();
-	static {
-		TYPE_VTEXT.setIndexOptions(IndexOptions.DOCS);
-		TYPE_VTEXT.setTokenized(true);
-		TYPE_VTEXT.setStored(true);
-		TYPE_VTEXT.setStoreTermVectors(true);
-		TYPE_VTEXT.setStoreTermVectorPositions(true);
-		TYPE_VTEXT.freeze();
-	}
-	public static MyField vtext(String name, String value, Store store) {
-		return new MyField(new Field(name, value, TYPE_VTEXT), MyFieldType.Text);
-	}
-	
-	public static MyField keyword(String name, String value, Store store) {
-		return new MyField(new StringField(name, value, store), MyFieldType.Keyword) ;
-	}
-
-	public static MyField stored(String name, long value) {
-		return new MyField(new StoredField(name, value), MyFieldType.Number) ;
-	}
-	
-	public static MyField date(String name, Date date, Store store){ 
-		return new MyField(new StringField(name, DateUtil.dateToString(date, "yyyyMMdd HHmmss"), store), MyFieldType.Date) ;
-	}
-
-	public static MyField text(String name, String value, Store store) {
-		return new MyField(new TextField(name, value, store), MyFieldType.Text);
-	}
-
-	
-	
 	public static MyField unknown(String name, Long value) {
-		return number(name, value) ;
-	}
-	public static MyField unknown(String name, Double value) {
-		return number(name, value) ;
-	}
-	public static MyField unknown(String name, Float value) {
 		return number(name, value) ;
 	}
 	public static MyField unknown(String name, Integer value) {
@@ -153,25 +142,23 @@ public class MyField {
 	public static MyField unknown(String name, Date value) {
 		return date(name, value) ;
 	}
-	
 	public static MyField unknown(String name, String value){
 		if (StringUtil.isNotBlank(value) && StringUtil.isNumeric(value)) {
 			return number(name, Long.parseLong(value)) ;
-		} else if (StringUtil.isAlphanumericUnderbar(value)){
+		} else if (isKeywordType(value)){
 			return keyword(name, value) ;
 		} else
-			return new MyField(new TextField(name, value, Store.YES), MyFieldType.Unknown);
+			return text(name, value);
 	}
 
 	public static MyField manual(String name, String value, Store store, boolean analyze, MyFieldType fieldType){
 		if (StringUtil.isBlank(value)) return new MyField(new StringField(name, "", store), fieldType) ;
 		
-		if (StringUtil.isAlphanumericUnderbar(value)){
+		if (isKeywordType(value)){
 			return keyword(name, value) ;
 		} else
 			return new MyField( analyze ? (new TextField(name, value, store)) : (new StringField(name, value, store)), fieldType);
 	}
-
 
 	public static MyField unknown(String name, Object value) {
 		if (value == null){
@@ -179,12 +166,8 @@ public class MyField {
 		}
 		if (value.getClass().equals(Long.class)){
 			return number(name, (Long)value) ;
-		} else if (value.getClass().equals(Double.class)){
-			return number(name, (Double)value) ;
-		} else if(value.getClass().equals(Float.class)){
-			return number(name, (Float)value) ;
 		} else if(value.getClass().equals(Integer.class)){
-			return number(name, (Integer)value) ;
+			return number(name, (Integer)value * 1L) ;
 		} else if(value.getClass().equals(Date.class)){
 			return date(name, (Date)value) ;
 		} else if (CharSequence.class.isInstance(value)) {
@@ -192,10 +175,6 @@ public class MyField {
 		} else {
 			return text(name, ObjectUtil.toString(value)) ;
 		}
-	}
-
-	public static MyField manual(String name, Field ifield){
-		return new MyField(ifield, MyFieldType.Unknown) ;
 	}
 
 	public static MyField noIndex(String name, String value) {
@@ -206,34 +185,49 @@ public class MyField {
 		return new MyField(new StoredField(name, value), MyFieldType.Number);
 	}
 
-	public static MyField noIndex(String name, int value) {
-		return new MyField(new StoredField(name, value), MyFieldType.Number);
-	}
-
-	public static MyField noIndex(String name, double value) {
-		return new MyField(new StoredField(name, value), MyFieldType.Number);
-	}
-
-	public static MyField noIndex(String name, float value) {
-		return new MyField(new StoredField(name, value), MyFieldType.Number);
-	}
-
-	public static MyField noIndex(String name, byte[] value) {
-		return new MyField(new StoredField(name, value), MyFieldType.Byte);
-	}
-
-	public static MyField noIndex(String name, BytesRef value) {
-		return new MyField(new StoredField(name, value), MyFieldType.Byte);
-	}
-
-
-
-	public Field indexField(FieldIndexingStrategy strategy, Document doc) {
+	public IndexableField indexField(FieldIndexingStrategy strategy, Document doc) {
 		strategy.save(doc, this, ifield) ;
 		return ifield ;
 	}
 
 	
+	
+	
+	
+	private static boolean isKeywordType(String str) {
+		if (str == null) {
+			return false;
+		} else {
+			char[] chars = str.toCharArray();
+			int i = 0;
+			for (int last = chars.length; i < last; ++i) {
+				char ch = chars[i];
+				if ((ch < 'A' || ch > 'Z') && (ch < 'a' || ch > 'z') && (ch < '0' || ch > '9') && ch != '_' && ch != '-') {
 
+					return false;
+				}
+			}
+			return true;
+		}
+	}
+
+
+	private static boolean isDateFormat(String val) {
+		try {
+			DateUtil.stringToDate(val) ;
+			return true ;
+		} catch(IllegalArgumentException | ParseException e) {
+			return false ;
+		}
+	}
+
+	public boolean ignoreBody() {
+		return ignoreBody;
+	}
+
+	public MyField ignoreBody(boolean ignoreBody) {
+		this.ignoreBody = ignoreBody ;
+		return this;
+	}
 }
 

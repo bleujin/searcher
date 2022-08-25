@@ -1,20 +1,33 @@
 package net.bleujin.searcher;
 
 import java.io.IOException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexNotFoundException;
+import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.Query;
+import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 
 import net.bleujin.searcher.index.IndexConfig;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
+import net.bleujin.searcher.reader.InfoReader;
 import net.bleujin.searcher.search.SearchConfig;
 import net.bleujin.searcher.search.SearchJob;
+import net.bleujin.searcher.search.SearchResponse;
 import net.bleujin.searcher.search.SearchSession;
 import net.ion.framework.util.Debug;
+import net.ion.framework.util.IOUtil;
 
 public class SearchController {
 
@@ -24,8 +37,9 @@ public class SearchController {
 	private boolean isModified = true;
 	private IndexSearcher isearcher = null; // recycle searcher
 	private IndexSearcher olderSearcher = null;
+	private final ReadWriteLock locker = new ReentrantReadWriteLock() ;
 
-	public SearchController(SearchControllerConfig config, Directory dir, OpenMode openMode) {
+	SearchController(SearchControllerConfig config, Directory dir, OpenMode openMode) {
 		this.config = config;
 		this.dir = dir;
 		this.openMode = openMode;
@@ -35,6 +49,10 @@ public class SearchController {
 		return config;
 	}
 
+	public ReadWriteLock locker() {
+		return locker ;
+	}
+	
 	public Directory dir() {
 		return dir;
 	}
@@ -47,11 +65,18 @@ public class SearchController {
 		dir.close();
 	}
 
-	public void destroySelf() {
+	@Deprecated // OnlyTest
+	public void destroySelf() throws IOException { 
 		try {
-			dir.close();
+			IndexWriterConfig conf = new IndexWriterConfig() ;
+			IndexWriter indexWriter  = new IndexWriter(dir, conf);
+            indexWriter.deleteAll();
+            indexWriter.commit();
+            IOUtil.close(indexWriter);
 		} catch (IOException ignore) {
 			ignore.printStackTrace();
+		} finally {
+			dir.close();
 		}
 	}
 
@@ -74,39 +99,73 @@ public class SearchController {
 	}
 
 	public <T> T index(IndexJob<T> indexJob) throws IOException {
-		IndexConfig iconfig = IndexConfig.create(this);
-
-		begin(iconfig.name());
-		IndexSession indexSession = null;
-		T result = null;
-
 		try {
-			indexSession = IndexSession.create(this, iconfig); // create indexWriter
-			result = indexJob.handle(indexSession);
-
-			indexSession.commit();
-		} catch (IOException e) {
-			indexSession.rollback();
-		} finally {
-			indexSession.forceClose();
-			end();
+			return indexAsync(indexJob).get() ;
+		} catch (InterruptedException | ExecutionException e) {
+			e.printStackTrace(); 
+			throw new IOException(e.getCause()) ;
 		}
+	}
+	
+	public <T> Future<T> indexAsync(final IndexJob<T> indexJob) throws IOException {
+		IndexConfig iconfig = IndexConfig.create(this);
+		
+		Future<T> result = iconfig.executorService().submit(() -> {
+			begin(iconfig.name());
+			Lock lock = locker.writeLock() ;
+			
+			IndexSession indexSession = null;
+			T rtn = null ;
+			try {
+				lock.lock() ;
+				
+				indexSession = IndexSession.create(this, iconfig); // create indexWriter
+				final IndexSession inner = indexSession ;
+				rtn = indexJob.handle(inner);
+
+				indexSession.commit();
+			} catch (Throwable e) {
+				e.printStackTrace() ;
+				indexSession.rollback();
+			} finally {
+				indexSession.forceClose();
+				end();
+				lock.unlock() ;
+			}
+			return rtn ;
+		}) ;
 
 		return result;
 	}
-
+	
+	
+	
+	
 	public <T> T search(SearchJob<T> searchJob) throws IOException {
 		SearchConfig sconfig = SearchConfig.create(this);
+		return search(sconfig, searchJob);
+	}
 
+	public SearchResponse search(final String query) throws IOException {
+		return search(session ->{
+			return session.createRequest(query).find() ;
+		}) ;
+	}
+	
+	
+	SearchResponse search(SearchConfig sconfig, final Query query) throws IOException {
+		return search(sconfig, session ->{
+			return session.createRequest(query).find() ;
+		}) ;
+	}
+	
+	
+	
+	<T> T search(SearchConfig sconfig, SearchJob<T> searchJob) throws IOException {
 		synchronized (this) { // if not modified, recycle IndexSearcher
 			if (isModified()) {
 				this.olderSearcher = this.isearcher;
-				
-				if (! DirectoryReader.indexExists(sconfig.dir())) {
-					index(isession -> { // index blank
-						return null ;
-					}) ;
-				}
+
 				
 				DirectoryReader dreader = DirectoryReader.open(sconfig.dir());
 				isearcher = new IndexSearcher(dreader);
@@ -118,6 +177,23 @@ public class SearchController {
 		T result = searchJob.handle(ssession);
 		forceOlderClose();
 		return result;
+	}
+	
+	
+	public SearchResponse search(String field, String value) throws IOException {
+		return search(new TermQuery(new Term(field, value)));
+	}
+
+	public SearchResponse search(final Query query) throws IOException {
+		return search(session ->{
+			return session.createRequest(query).find() ;
+		}) ;
+	}
+	
+	public InfoReader infoReader() throws IOException {
+		return search(session ->{
+			return session.infoReader() ;
+		}) ;
 	}
 
 	private void forceOlderClose() {
@@ -132,5 +208,10 @@ public class SearchController {
 	public OpenMode openMode() {
 		return openMode;
 	}
+
+	public Searcher newSearcher() {
+		return new Searcher(this);
+	}
+
 
 }

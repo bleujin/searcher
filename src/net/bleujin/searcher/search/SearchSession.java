@@ -44,8 +44,6 @@ public class SearchSession {
 		return createRequest(wrequest.query()).mapping(wrequest) ;
 	}
 
-	
-	
 	public static SearchSession create(SearchController sc, IndexSearcher isearcher, SearchConfig sconfig) throws IOException {
 		return new SearchSession(sc, isearcher, sconfig);
 	}
@@ -55,13 +53,13 @@ public class SearchSession {
 	}
 
 	public SearchRequest createRequest(Term query) {
-		return new SearchRequest(this, new TermQuery(query));
+		return createRequest(new TermQuery(query));
 	}
 
 
 	public SearchRequest createRequest(String query) throws IOException {
 		try {
-			return new SearchRequest(this, parseQuery(query));
+			return createRequest(parseQuery(query));
 		} catch (ParseException e) {
 			throw new IOException(e) ;
 		}

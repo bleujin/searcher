@@ -15,23 +15,26 @@ public class TestAllSearcher extends TestSuite{
 		ts.addTestSuite(TestInterface.class);
 		ts.addTestSuite(TestFieldType.class);
 
-		ts.addTestSuite(TestFilter.class);
+		ts.addTestSuite(TestKoreanAnalyzer.class);
+		ts.addTestSuite(TestLimitedChannel.class);
+		ts.addTestSuite(TestMultiSearcher.class);
+		ts.addTestSuite(TestPerFieldAnalyzer.class);
+		ts.addTestSuite(TestQueryParser.class);
+
+		ts.addTestSuite(TestRangeFilter.class);
+		ts.addTestSuite(TestReader.class);
+		ts.addTestSuite(TestRequestSelection.class);
 
 		ts.addTestSuite(TestSearcher.class);
-		ts.addTestSuite(TestSort.class) ;
 		ts.addTestSuite(TestSearcherPaging.class) ;
-		ts.addTestSuite(TestQueryParser.class);
-		
-		ts.addTestSuite(TestMultiSearcher.class);
-
-		ts.addTestSuite(TestSortExpression.class);
-		ts.addTestSuite(TestSearchSort.class);
-		
 		ts.addTestSuite(TestSearchRequest.class);
 		ts.addTestSuite(TestSearchResponse.class);
+		ts.addTestSuite(TestSearchSchema.class);
+		ts.addTestSuite(TestSearchSort.class);
 		
-		ts.addTestSuite(TestReader.class);
-		ts.addTestSuite(TestReaderInfo.class) ;
+		ts.addTestSuite(TestSort.class) ;
+		ts.addTestSuite(TestSortExpression.class);
+		ts.addTestSuite(TestTotalCount.class) ;
 
 		return ts;
 	}

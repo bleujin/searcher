@@ -86,7 +86,7 @@ public class IndexSession {
 		return first == null ? null : first.toLuceneDoc() ;
 	}
 	
-	public WriteDocument loadDocument(String docId, boolean replaceValue, String... numfieldnames) throws IOException {
+	public WriteDocument loadDocument(String docId) throws IOException {
 		
 		ReadDocument rdoc = searchSession().createRequest(new TermQuery(new Term(SearchConstant.DocKey, docId))).findOne();
 		Document findDoc = (rdoc == null) ? new Document() : rdoc.toLuceneDoc() ;
@@ -110,12 +110,7 @@ public class IndexSession {
 		
 		return result;
 	}
-	
 
-	
-	public WriteDocument loadDocument(String docId) throws IOException {
-		return loadDocument(docId, false) ;
-	}
 
 	public WriteDocument loadDocument(String docId, boolean replaceValue, FieldLoadable floadable) throws IOException {
 		ReadDocument rdoc = searchSession().createRequest(new TermQuery(new Term(SearchConstant.DocKey, docId))).findOne();

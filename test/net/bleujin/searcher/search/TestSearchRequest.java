@@ -36,7 +36,7 @@ public class TestSearchRequest extends AbTestCase {
 	}
 	
 	public void testTerm() throws Exception {
-		searcher.createRequest(QueryUtil.newBuilder().term("name", "jin").gte("int", 3).andBuild()).find().debugPrint();
+		searcher.createRequest(QueryUtil.newBuilder().gte("int", 3).andBuild()).descendingNum("int").find().debugPrint("int");
 	}
 	
 	public void testSearchQuery() throws Exception {

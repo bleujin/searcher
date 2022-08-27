@@ -47,7 +47,7 @@ public class Searcher {
 	}
 
 	public SearchRequestWrapper createRequest(String query, Analyzer analyzer) throws ParseException {
-		QueryParser newParser = new QueryParser(SearchConstant.ISALL_FIELD, sdc.sconfig().analyzer()) ;
+		QueryParser newParser = new QueryParser(SearchConstant.ISALL_FIELD, analyzer) ;
 		Query pquery = StringUtil.isBlank(query) ? new MatchAllDocsQuery() : newParser.parse(query);
 		
 		return createRequest(pquery);

@@ -2,29 +2,28 @@ package net.bleujin.searcher.search;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 
-import net.bleujin.searcher.common.FieldIndexingStrategy;
-import net.bleujin.searcher.common.IndexFieldType;
-import net.ion.framework.util.MapUtil;
 import net.ion.framework.util.StringUtil;
 
 public class SortExpression {
 
 	private static String[] KEYWORD_FIELD = new String[]{"_doc", "_score"};
 	private static String[] ORDER = new String[]{"asc", "desc"};
-	private static Map<String, Type> ORDER_ENCODING = MapUtil.<Type>chainKeyMap()
-		.put("_string", SortField.Type.STRING)
-		.put("_doc", SortField.Type.DOC)
-		.put("_score", SortField.Type.SCORE)
-		.put("_number", SortField.Type.DOUBLE)
-		.toMap() ;
+
+	private SearchConfig sconfig;
+	public SortExpression(SearchConfig sconfig){
+		this.sconfig = sconfig ;
+	}
 	
-	public static SortField[] parse(IndexFieldType ift, String... fields) {
+	public SortField[] parse(String expression) {
+		return parseExpression(StringUtil.split(expression, ",")) ;
+	}
+	
+	private SortField[] parseExpression(String... fields) {
 		if (fields == null || fields.length == 0 || (fields.length == 1 && StringUtil.isBlank(fields[0]))) return new SortField[]{SortField.FIELD_SCORE} ;
 		
 		
@@ -34,53 +33,24 @@ public class SortExpression {
 			
 			String[] sps = StringUtil.split(field, " =") ;
 
-			String fieldName = sps[0] ; // mandatory
+			String fieldName = StringUtil.lowerCase(StringUtil.trim(sps[0])) ; // mandatory
 			Type sortFieldType = SortField.Type.STRING ;
 			boolean isRerverse = false ;
 			
 			if (ArrayUtils.contains(KEYWORD_FIELD, fieldName) && sps.length == 1) {
 				result.add( ("_doc".equals(fieldName)) ? SortField.FIELD_DOC : SortField.FIELD_SCORE ) ;
 			} else {
-				if (sps.length == 1){
-					sortFieldType = ift.isNumericField(fieldName) ? SortField.Type.LONG : SortField.Type.STRING ;
-				} else if (sps.length == 2) {
-					if (ORDER_ENCODING.containsKey(sps[1])) {
-						sortFieldType = getSortFieldType(sps[1])  ;
-					} else if (ift.isNumericField(fieldName)){
-						sortFieldType = SortField.Type.LONG ;
-					}
-					
-					if (ArrayUtils.contains(ORDER, sps[1])) {
-						isRerverse = "desc".equals(sps[1]) ;
-					}
-				} else if (sps.length == 3){
-					sortFieldType =  getSortFieldType(sps[1]);
-					isRerverse = "desc".equals(sps[2]) ;
+				if (sps.length == 2 && ArrayUtils.contains(ORDER, sps[1])) {
+					isRerverse = "desc".equalsIgnoreCase(StringUtil.trim(sps[1])) ;
 				}
 				
-				result.add(new SortField(FieldIndexingStrategy.makeSortFieldName(fieldName), sortFieldType, isRerverse)) ;
+				sortFieldType = sconfig.isNumField(fieldName) ? SortField.Type.LONG : SortField.Type.STRING ;
+				result.add(new SortField(fieldName, sortFieldType, isRerverse)) ;
 			}
 		}
 		
 		return (SortField[])result.toArray(new SortField[0]) ;
 	}
 
-	private static SortField.Type getSortFieldType(String sp) {
-		return (ORDER_ENCODING.containsKey(sp)) ?  ORDER_ENCODING.get(sp) : SortField.Type.STRING;
-	}
-
-	public static SearchRequest applySort(SearchRequest sreq, String exprString) {
-		
-		
-		
-		return sreq;
-	}
-
-	public SortField[] parseTest(String... fields) {
-		return parse(IndexFieldType.DEFAULT, fields);
-	}
-	
-	
-	
 	
 }

@@ -126,21 +126,30 @@ public class SearchRequest {
 		return toXML().toString() ;
 	}
 	
-	// TODO
 	public SearchRequest sort(String expr){
-
+		this.sortFields = SetUtil.create(new SortExpression(ssession.searchConfig()).parse(expr)) ;
 		return this ;
 	}
 
 	public SearchRequest ascending(String field) {
-		sortFields.add(new SortField(field, Type.STRING));
+		if (ssession.searchConfig().numFields().contains(field)) {
+			sortFields.add(new SortField(field, Type.LONG));
+		} else {
+			sortFields.add(new SortField(field, Type.STRING));
+		}
 		return this ;
 	}
 
 	public SearchRequest descending(String field) {
-		sortFields.add(new SortField(field, Type.STRING, true));
+		if (ssession.searchConfig().numFields().contains(field)) {
+			sortFields.add(new SortField(field, Type.LONG, true));
+		} else {
+			sortFields.add(new SortField(field, Type.STRING, true));
+		}
 		return this ;
 	}
+	
+	
 
 	public SearchRequest ascendingNum(String field) {
 		sortFields.add(new SortField(field, Type.LONG));
@@ -175,6 +184,7 @@ public class SearchRequest {
 		this.offset = wrequest.offset() ;
 		this.columns = wrequest.selectorField() ;
 		wrequest.paramKeys().forEach(key -> this.setParam(key, wrequest.getParam(key)));
+		this.sortFields =  wrequest.sortField() ;
 		return this ;
 	}
 }

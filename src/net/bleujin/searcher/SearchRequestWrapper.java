@@ -12,8 +12,8 @@ import org.apache.lucene.search.SortField.Type;
 
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.search.SearchConfig;
-import net.bleujin.searcher.search.SearchRequest;
 import net.bleujin.searcher.search.SearchResponse;
+import net.bleujin.searcher.search.SortExpression;
 import net.bleujin.searcher.search.processor.PostProcessor;
 import net.bleujin.searcher.search.processor.PreProcessor;
 import net.ion.framework.util.MapUtil;
@@ -31,7 +31,7 @@ public class SearchRequestWrapper {
 	private Map<String, Object> param = MapUtil.newCaseInsensitiveMap() ;
 	private Set<String> columns = SetUtil.newSet() ;
 
-	public SearchRequestWrapper(Searcher searcher, SearchController sdc, Query query) {
+	SearchRequestWrapper(Searcher searcher, SearchController sdc, Query query) {
 		this.searcher = searcher ;
 		this.sdc = sdc ;
 		this.query = query ;
@@ -61,12 +61,20 @@ public class SearchRequestWrapper {
 	
 	
 	public SearchRequestWrapper ascending(String field) {
-		sortFields.add(new SortField(field, Type.STRING)) ;
+		if (sconfig.numFields().contains(field)) {
+			sortFields.add(new SortField(field, Type.LONG)) ;
+		} else {
+			sortFields.add(new SortField(field, Type.STRING)) ;
+		}
 		return this;
 	}
 	
 	public SearchRequestWrapper descending(String field) {
-		sortFields.add(new SortField(field, Type.STRING, true)) ;
+		if (sconfig.numFields().contains(field)) {
+			sortFields.add(new SortField(field, Type.LONG, true)) ;
+		} else {
+			sortFields.add(new SortField(field, Type.STRING, true)) ;
+		}
 		return this ;
 	}
 
@@ -91,8 +99,8 @@ public class SearchRequestWrapper {
 	}
 
 
-	public SearchRequestWrapper sort(String string) {
-		// TODO Auto-generated method stub
+	public SearchRequestWrapper sort(String expr) {
+		this.sortFields = SetUtil.create(new SortExpression(sconfig).parse(expr)) ;
 		return this;
 	}
 
@@ -143,6 +151,10 @@ public class SearchRequestWrapper {
 	}
 	public Set<String> selectorField(){
 		return columns ;
+	}
+
+	public SearchConfig searchConfig() {
+		return sconfig ;
 	}
 	
 

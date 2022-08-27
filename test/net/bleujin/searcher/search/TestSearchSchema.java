@@ -10,7 +10,6 @@ import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 
 import net.bleujin.searcher.AbTestCase;
-import net.bleujin.searcher.Searcher;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
 import net.ion.framework.parse.gson.JsonObject;

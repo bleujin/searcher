@@ -52,12 +52,6 @@ public abstract class FieldIndexingStrategy {
 	
 	public abstract void save(Document doc, MyField myField, IndexableField ifield)  ;
 
-	public static String makeSortFieldName(String fieldName) {
-		return fieldName;
-		// return (fieldName + MyField.SORT_POSTFIX);
-	}
-
-	
 	public static final FieldIndexingStrategy create(final IndexConfig iconfig) {
 		return new FieldIndexingStrategy() {
 

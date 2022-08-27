@@ -6,7 +6,6 @@ import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.Query;
 
 import net.bleujin.searcher.AbTestCase;
-import net.bleujin.searcher.Searcher;
 import net.bleujin.searcher.common.AnalyzerUtil;
 import net.bleujin.searcher.search.processor.StdOutProcessor;
 import net.ion.framework.util.Debug;

@@ -5,6 +5,7 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 
 import net.bleujin.searcher.AbTestCase;
+import net.bleujin.searcher.SearchRequestWrapper;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
 import net.ion.framework.util.RandomUtil;
@@ -23,6 +24,8 @@ public class TestSort extends AbTestCase{
 		}) ;
 		
 		sdc.search(session ->{
+			session.searchConfig().numFieldType("val") ;
+			
 			Sort sort = session.createRequest("").sort("val=desc").sort() ;
 			SortField sfield = sort.getSort()[0];
 			assertEquals(true, sfield.getType() == Type.LONG) ;
@@ -35,8 +38,9 @@ public class TestSort extends AbTestCase{
 	
 	
 	public void testDescending() throws Exception {
-		
-		Sort sort = sdc.newSearcher().createRequest("").descending("val").sort() ;
+		SearchRequestWrapper sreq = sdc.newSearcher().createRequest("");
+
+		Sort sort = sreq.descending("val").sort() ;
 		SortField sfield = sort.getSort()[0];
 		assertEquals(true, sfield.getType() == Type.STRING) ;
 		assertEquals(true, sfield.getReverse()) ;
@@ -59,12 +63,14 @@ public class TestSort extends AbTestCase{
 		sdc.index(new IndexJob<Void>() {
 			public Void handle(IndexSession isession) throws Exception {
 				for (int i = 0; i < 10; i++) {
-					isession.newDocument().number("index", RandomUtil.nextLong()).insert() ; 
+					isession.newDocument().number("index", RandomUtil.nextRandomInt(500)).insert() ; 
 				}
 				return null;
 			}
 		}) ;
+		SearchRequestWrapper sreq = sdc.newSearcher().createRequest("");
+		sreq.searchConfig().numFieldType("index") ;
 		
-		sdc.newSearcher().createRequest("").sort("index desc").find().debugPrint("index");
+		sreq.sort("index desc").find().debugPrint("index");
 	}
 }

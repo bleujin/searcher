@@ -153,14 +153,14 @@ public class TestDocument extends AbTestCase {
 	public void testEmptyUpdate() throws Exception {
 		sdc.index(new IndexJob<Void>() {
 			public Void handle(IndexSession isession) throws Exception {
-				return isession.loadDocument("bleujin", true).keyword("name", "bleujin").text("explain", "hello bleujin").updateVoid();
+				return isession.loadDocument("bleujin").keyword("name", "bleujin").text("explain", "hello bleujin").updateVoid();
 			}
 		});
 
 		sdc.index(new IndexJob<Void>() {
 			@Override
 			public Void handle(IndexSession isession) throws Exception {
-				WriteDocument wdoc = isession.loadDocument("bleujin", true);
+				WriteDocument wdoc = isession.loadDocument("bleujin");
 				wdoc.update();
 				wdoc.update();
 				return null;
@@ -196,7 +196,7 @@ public class TestDocument extends AbTestCase {
 		});
 		sdc.index(new IndexJob<Void>() {
 			public Void handle(IndexSession isession) throws Exception {
-				return isession.loadDocument("bleujin", true).keyword("name", "hero").updateVoid();
+				return isession.loadDocument("bleujin").keyword("name", "hero").updateVoid();
 			}
 		});
 
@@ -206,7 +206,7 @@ public class TestDocument extends AbTestCase {
 
 		sdc.index(new IndexJob<Void>() {
 			public Void handle(IndexSession isession) throws Exception {
-				WriteDocument wdoc = isession.loadDocument("bleujin", true);
+				WriteDocument wdoc = isession.loadDocument("bleujin");
 				wdoc.keyword("name", "hero");
 				wdoc.keyword("name", "jin"); // replace
 				return wdoc.updateVoid();

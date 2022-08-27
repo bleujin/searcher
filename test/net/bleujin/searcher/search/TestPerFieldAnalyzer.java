@@ -78,14 +78,14 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 			@Override
 			public Void handle(IndexSession isession) throws Exception {
 				isession.indexConfig().indexAnalyzer(sanalyzer);
-				isession.newDocument("perfield").text("id", "태극기").add(MyField.text("name", "태극기")).update();
+				isession.newDocument("perfield").text("id", "태극기").text("name", "태극기").update();
 				return null;
 			}
 		});
 		sdc.search(session -> {
 			ReadDocument rdoc = session.createRequest("").findOne();
-			assertEquals(0, session.createRequest("id:태극기").find().size());
-			assertEquals(1, session.createRequest("name:태극기").find().size());
+			assertEquals(0, session.createRequest("id:태극").find().size());
+			assertEquals(1, session.createRequest("name:태극").find().size());
 			return null;
 		});
 	}
@@ -159,10 +159,12 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 	}
 	
 	public void testIndex() throws Exception {
+		PerFieldAnalyzerWrapper analyzer = new PerFieldAnalyzerWrapper(new CJKAnalyzer(), MapUtil.<String, Analyzer>create("name", new KeywordAnalyzer()));
+		
 		sdc.index(new IndexJob<Void>() {
 			@Override
 			public Void handle(IndexSession isession) throws Exception {
-				isession.indexConfig().indexAnalyzer(new PerFieldAnalyzerWrapper(new CJKAnalyzer(), MapUtil.<String, Analyzer>create("name", new KeywordAnalyzer()))) ;
+				isession.indexConfig().indexAnalyzer(analyzer) ;
 				
 				isession.newDocument("123").unknown("name", "태극기").insert() ;
 				return null;
@@ -173,13 +175,13 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 		assertEquals(1, searcher.createRequest("").find().size()) ; 
 		
 		assertEquals(1, searcher.createRequest("name:태극기", new KeywordAnalyzer()).find().size()) ;
-		assertEquals(1, searcher.createRequest("name:태극기", new CJKAnalyzer()).find().size()) ;
+		assertEquals(0, searcher.createRequest("name:태극기", new CJKAnalyzer()).find().size()) ;
 		assertEquals(1, searcher.createRequest("태극기", new CJKAnalyzer()).find().size()) ;
 		assertEquals(0, searcher.createRequest("태극기", new KeywordAnalyzer()).find().size()) ;
 		
 
 		assertEquals(1, searcher.createRequest("name:태극기", new PerFieldAnalyzerWrapper(new CJKAnalyzer(), MapUtil.<String, Analyzer>create("name", new KeywordAnalyzer()))).find().size()) ;
-		assertEquals(1, searcher.createRequest("태극기", new PerFieldAnalyzerWrapper(new CJKAnalyzer(), MapUtil.<String, Analyzer>create("name", new KeywordAnalyzer()))).find().size()) ;
+		assertEquals(1, searcher.createRequest("태극기", analyzer).find().size()) ;
 
 	}
 }

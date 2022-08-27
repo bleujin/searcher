@@ -16,7 +16,7 @@ public class TestFieldType extends AbTestCase {
 			public Void handle(IndexSession isession) throws Exception {
 				isession.deleteAll() ;
 				isession.newDocument("bleujin").keyword("name", "bleujin").number("age", 20L).text("explain", "hello bleujin").update() ;
-				isession.newDocument("hero").keyword("name", "hero").number("age", 30).text("explain", "hi hero").update() ;
+				isession.newDocument("hero").keyword("name", "hero").number("age", 30L).text("explain", "hi hero").update() ;
 				isession.newDocument("jin").keyword("name", "jin").number("age", 7).text("explain", "namaste jin").update() ;
 				return null;
 			}
@@ -26,8 +26,13 @@ public class TestFieldType extends AbTestCase {
 	public void testNumericSort() throws Exception {
 
 		sdc.search(session->{
-			session.createRequest("").ascendingNum("age").find().debugPrint(); 
-			session.createRequest("").sort("age").find().debugPrint(); 
+			session.createRequest("").ascendingNum("age").findOne().getField("age").numericValue().doubleValue() ;
+			
+			assertEquals(7, session.createRequest("").ascendingNum("age").findOne().asLong("age", 0)) ;
+			assertEquals(30, session.createRequest("").descendingNum("age").findOne().asLong("age", 30));
+			
+			session.searchConfig().numFieldType("age") ;
+			assertEquals(7, session.createRequest("").sort("age").findOne().asLong("age", 0)) ;
 			return null ;
 		}) ;
 	}
@@ -41,11 +46,11 @@ public class TestFieldType extends AbTestCase {
 		sdc.index(new IndexJob<Void>() {
 			@Override
 			public Void handle(IndexSession isession) throws Exception {
-				WriteDocument wdoc = isession.loadDocument("bleujin", true, "age").keyword("nfield", "new").update() ;
+				WriteDocument wdoc = isession.loadDocument("bleujin").keyword("nfield", "new").update() ;
 				return null;
 			}
 		}) ;
-		sdc.search("age", "" + 20).debugPrint();
+		sdc.search("age", "" + 20).debugPrint("nfield");
 		sdc.search("age:[20 TO 20]").debugPrint();
 		sdc.search("hello").debugPrint();
 

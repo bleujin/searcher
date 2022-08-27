@@ -31,7 +31,7 @@ apply lucene 9.3
 			@Override
 			public Void handle(SearchSession ss) throws IOException {
 				SearchResponse sres = ss.createRequest("bleujin").find();
-				Debug.debug(sres, sres.totalCount(), ss.searcherHashCode()) ;
+				Debug.debug(sres, sres.totalCount()) ;
 				return null;
 			}
 		}) ;

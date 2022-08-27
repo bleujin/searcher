@@ -45,7 +45,6 @@ public class TestSearchRequest extends AbTestCase {
 	}
 	
 	public void testSearchFilterApplied() throws Exception {
-//		central.newSearcher().andFilter(new TermFilter("name", "bleujin")).createRequest("").find().debugPrint();
 		sdc.newSearcher().createRequest(QueryUtil.newBuilder().term("name", "bleujin").term("age", "30").gte("age", 40).andBuild()).find().debugPrint();
 	}
 	

@@ -89,11 +89,6 @@ public class SearchSession {
 		return ReadDocument.loadDocument(docId, doc);
 	}
 
-	public ReadDocument doc(int docId, SearchRequest sreq) throws IOException {
-		Document doc = sreq.selectorField().size() > 0 ? isearcher.doc(docId, SetUtil.add(sreq.selectorField(), IKeywordField.DocKey)) : isearcher.doc(docId) ;
-		return ReadDocument.loadDocument(doc);
-	}
-	
 	public SearchConfig searchConfig() {
 		return sconfig;
 	}

@@ -9,6 +9,7 @@ import org.apache.lucene.search.ScoreDoc;
 import com.google.common.base.Predicate;
 
 import net.bleujin.searcher.common.ReadDocument;
+import net.bleujin.searcher.extend.BaseSimilarity;
 import net.ion.framework.db.Page;
 import net.ion.framework.util.Debug;
 import net.ion.framework.util.ListUtil;
@@ -77,7 +78,7 @@ public class SearchResponse {
 	}
 	
 	public ReadDocument documentById(int docId) throws IOException {
-		return ssession.doc(docId, sreq) ;
+		return ssession.readDocument(docId, sreq) ;
 	}
 
 	public ReadDocument documentById(final String docIdValue) {
@@ -178,6 +179,18 @@ public class SearchResponse {
 
 	public SearchSession searchSession() {
 		return ssession;
+	}
+
+	public DocHighlighter createHighlighter(String savedFieldName, String matchString){
+		return new DocHighlighter(this, savedFieldName, matchString) ;
+	}
+
+	public BaseSimilarity similarity(ReadDocument target) {
+		return new BaseSimilarity(this, target);
+	}
+
+	public Integer[] docIds() {
+		return docIds.toArray(new Integer[0]);
 	}
 
 }

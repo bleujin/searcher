@@ -27,6 +27,7 @@ import org.apache.lucene.search.TopScoreDocCollector;
 import org.apache.lucene.store.Directory;
 
 import net.bleujin.searcher.AbTestCase;
+import net.bleujin.searcher.Searcher;
 import net.bleujin.searcher.common.MyField;
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.index.IndexJob;
@@ -155,5 +156,30 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 		IOUtil.close(tokenStream);
 		IOUtil.close(analyzer);
 		Debug.line(result);
+	}
+	
+	public void testIndex() throws Exception {
+		sdc.index(new IndexJob<Void>() {
+			@Override
+			public Void handle(IndexSession isession) throws Exception {
+				isession.indexConfig().indexAnalyzer(new PerFieldAnalyzerWrapper(new CJKAnalyzer(), MapUtil.<String, Analyzer>create("name", new KeywordAnalyzer()))) ;
+				
+				isession.newDocument("123").unknown("name", "태극기").insert() ;
+				return null;
+			}
+		}) ;
+		
+		Searcher searcher = sdc.newSearcher() ;
+		assertEquals(1, searcher.createRequest("").find().size()) ; 
+		
+		assertEquals(1, searcher.createRequest("name:태극기", new KeywordAnalyzer()).find().size()) ;
+		assertEquals(1, searcher.createRequest("name:태극기", new CJKAnalyzer()).find().size()) ;
+		assertEquals(1, searcher.createRequest("태극기", new CJKAnalyzer()).find().size()) ;
+		assertEquals(0, searcher.createRequest("태극기", new KeywordAnalyzer()).find().size()) ;
+		
+
+		assertEquals(1, searcher.createRequest("name:태극기", new PerFieldAnalyzerWrapper(new CJKAnalyzer(), MapUtil.<String, Analyzer>create("name", new KeywordAnalyzer()))).find().size()) ;
+		assertEquals(1, searcher.createRequest("태극기", new PerFieldAnalyzerWrapper(new CJKAnalyzer(), MapUtil.<String, Analyzer>create("name", new KeywordAnalyzer()))).find().size()) ;
+
 	}
 }

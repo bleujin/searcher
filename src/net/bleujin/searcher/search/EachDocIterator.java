@@ -33,7 +33,7 @@ public class EachDocIterator implements Iterator<ReadDocument>{
 	@Override
 	public ReadDocument next() {
 		try {
-			return session.doc(docIter.next(), req);
+			return session.readDocument(docIter.next(), req);
 		} catch (IOException e) {
 			throw new IllegalStateException(e) ;
 		}

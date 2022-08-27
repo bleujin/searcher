@@ -16,6 +16,7 @@
 	<classpathentry kind="lib" path="lib/iframework_2.4.jar"/>
 	<classpathentry kind="lib" path="lib/jsr311_fat.jar"/>
 	<classpathentry kind="lib" path="lib/search_util_fat.jar"/>
+	<classpathentry kind="lib" path="lib/searchextend_fat.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

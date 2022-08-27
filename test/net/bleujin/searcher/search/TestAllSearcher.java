@@ -12,7 +12,8 @@ public class TestAllSearcher extends TestSuite{
 		TestSuite ts = new TestSuite("All Searcher");
 		
 		ts.addTestSuite(TestBlank.class) ;
-		ts.addTestSuite(TestField.class);
+		ts.addTestSuite(TestInterface.class);
+		ts.addTestSuite(TestFieldType.class);
 
 		ts.addTestSuite(TestFilter.class);
 

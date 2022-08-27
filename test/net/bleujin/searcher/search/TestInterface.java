@@ -3,7 +3,7 @@ package net.bleujin.searcher.search;
 import net.bleujin.searcher.AbTestCase;
 import net.ion.framework.util.Debug;
 
-public class TestFirst extends AbTestCase{
+public class TestInterface extends AbTestCase{
 
 	
 	public void testFirst() throws Exception {
@@ -15,17 +15,8 @@ public class TestFirst extends AbTestCase{
 		}) ;
 
 		sdc.search(session ->{
-			
 			SearchResponse response = session.createRequest("20").descending("id").find() ;
-			response.eachDoc(new EachDocHandler<Void>() {
-				@Override
-				public <T> T handle(EachDocIterator iter) {
-					while(iter.hasNext()){
-						Debug.line(iter.next());
-					}
-					return null;
-				}
-			}) ;
+			response.debugPrint() ;
 			return null ;
 		}) ;
 		

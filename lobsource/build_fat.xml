@@ -25,6 +25,16 @@
         </jar>
     </target>
 	
+    <target name="searchextend">
+    	<delete file="${targetDir}/searchextend_fat.jar"></delete>
+        <jar destfile="${targetDir}/searchextend_fat.jar">
+        	<zipgroupfileset dir="${basedir}\searchextend" id="id">
+			    <include name="*.jar"/>
+			    <exclude name="META-INF/*.SF"/>
+			</zipgroupfileset>
+        </jar>
+    </target>
+	
 	
     <target name="search_util">
     	<delete file="${targetDir}/search_util_fat.jar"></delete>

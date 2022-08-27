@@ -18,6 +18,7 @@ public class TestAnalyzerWrapper extends AbTestCase{
 			@Override
 			public Void handle(IndexSession isession) throws Exception {
 				isession.indexConfig().indexAnalyzer(new PerFieldAnalyzerWrapper(new CJKAnalyzer(), MapUtil.<String, Analyzer>create("name", new KeywordAnalyzer()))) ;
+				
 				isession.newDocument("123").unknown("name", "태극기").insert() ;
 				return null;
 			}
@@ -27,7 +28,7 @@ public class TestAnalyzerWrapper extends AbTestCase{
 		assertEquals(1, searcher.createRequest("").find().size()) ; 
 		
 		assertEquals(1, searcher.createRequest("name:태극기", new KeywordAnalyzer()).find().size()) ;
-		assertEquals(0, searcher.createRequest("name:태극기", new CJKAnalyzer()).find().size()) ;
+		assertEquals(1, searcher.createRequest("name:태극기", new CJKAnalyzer()).find().size()) ;
 		assertEquals(1, searcher.createRequest("태극기", new CJKAnalyzer()).find().size()) ;
 		assertEquals(0, searcher.createRequest("태극기", new KeywordAnalyzer()).find().size()) ;
 		

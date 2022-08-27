@@ -9,6 +9,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexNotFoundException;
+import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -153,9 +154,9 @@ public class SearchController {
 	}
 	
 	
-	SearchResponse search(SearchConfig sconfig, final Query query) throws IOException {
+	SearchResponse search(SearchConfig sconfig, final SearchRequestWrapper wrequest) throws IOException {
 		return search(sconfig, session ->{
-			return session.createRequest(query).find() ;
+			return session.createRequest(wrequest).find() ;
 		}) ;
 	}
 	
@@ -196,6 +197,13 @@ public class SearchController {
 		}) ;
 	}
 
+	public IndexReader indexReader() throws IOException {
+		return search(session ->{
+			return session.indexReader() ;
+		}) ;
+	}
+
+	
 	private void forceOlderClose() {
 		if (this.olderSearcher != null) {
 			try {

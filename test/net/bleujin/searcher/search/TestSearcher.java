@@ -1,44 +1,34 @@
 package net.bleujin.searcher.search;
 
-import static org.junit.Assert.assertEquals;
-
 import java.util.List;
 
+import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.Searcher;
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.search.processor.StdOutProcessor;
-import net.ion.nsearcher.ISTestCase;
-import net.ion.nsearcher.config.Central;
 
-public class TestSearcher extends ISTestCase {
+public class TestSearcher extends AbTestCase {
 
 	private Searcher searcher;
-	private Central central = null ; 
 	public void setUp() throws Exception {
-		central = sampleTestDocument() ;
-		searcher = central.newSearcher() ;
+		super.setUp(); 
+		sdc.index(TEST100);
+		searcher = sdc.newSearcher() ;
 	}
-
-	public void tearDown() throws Exception {
-		central.destroySelf() ;
-	}
-
 
 	public void testSearchCount() throws Exception {
 		searcher.addPostListener(new StdOutProcessor()) ;
 		SearchResponse result = searcher.search("bleujin");
 		List<ReadDocument> docs = result.getDocument();
-		assertEquals(6, result.size());
+		assertEquals(25, result.size());
 	}
 	
 
 	public void testSearchFieldCount() throws Exception {
 		searcher.addPostListener(new StdOutProcessor()) ;
 		SearchResponse result = searcher.search("mysub:(bleujin novision) OR subject:(bleujin novision)");
-		List<ReadDocument> docs = result.getDocument();
-//		for (MyDocument doc : docs) {
-//			Debug.line(doc) ;
-//		}
+		
+		result.debugPrint(); 
 	}
 
 	public void testPage() throws Exception {
@@ -57,8 +47,8 @@ public class TestSearcher extends ISTestCase {
 	
 
 	public void testAllDoc() throws Exception {
-		List<ReadDocument> docs = searcher.search("").getDocument();
-		assertEquals(24, docs.size()) ;
+		List<ReadDocument> docs = searcher.createRequest("").find().getDocument();
+		assertEquals(100, docs.size()) ;
 	}
 }
 

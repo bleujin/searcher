@@ -1,7 +1,7 @@
 package net.bleujin.searcher.search;
 
 import org.apache.lucene.document.Document;
-import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
@@ -9,28 +9,24 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TopDocs;
 
-import junit.framework.TestCase;
-import net.bleujin.searcher.Searcher;
-import net.bleujin.searcher.index.IndexJob;
-import net.bleujin.searcher.index.IndexSession;
+import net.bleujin.searcher.AbTestCase;
+import net.bleujin.searcher.SearchController;
+import net.bleujin.searcher.SearchControllerConfig;
 import net.ion.framework.util.Debug;
-import net.ion.nsearcher.config.Central;
-import net.ion.nsearcher.config.CentralConfig;
-import net.ion.nsearcher.index.IndexJobs;
 
-public class TestMultiSearcher extends TestCase {
+public class TestMultiSearcher extends AbTestCase {
 
-	private Central c1;
-	private Central c2;
+	private SearchController c1;
+	private SearchController c2;
 
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
-		this.c1 = CentralConfig.newRam().build();
-		c1.newIndexer().index(IndexJobs.create("jin", 3));
+		this.c1 =  SearchControllerConfig.newRam().build(OpenMode.CREATE_OR_APPEND);
+		c1.index(createIndexJob("jin", 3));
 
-		this.c2 = CentralConfig.newRam().build();
-		c2.newIndexer().index(IndexJobs.create("hero", 2));
+		this.c2 =  SearchControllerConfig.newRam().build(OpenMode.CREATE_OR_APPEND);
+		c2.index(createIndexJob("hero", 2));
 	}
 	
 	@Override
@@ -46,7 +42,10 @@ public class TestMultiSearcher extends TestCase {
 	}
 
 	public void testSearchLucene() throws Exception {
-		MultiReader mreader = new MultiReader( new IndexReader[]{c1.newReader().getIndexReader(), c2.newReader().getIndexReader()});
+		
+		
+		
+		MultiReader mreader = new MultiReader(c1.indexReader(), c2.indexReader());
 		IndexSearcher isearcher = new IndexSearcher(mreader);
 
 		Query query = new MatchAllDocsQuery();
@@ -60,39 +59,5 @@ public class TestMultiSearcher extends TestCase {
 //		c1.newSearcher().search("").debugPrint(); 
 	}
 	
-	public void testInterface() throws Exception {
-		Searcher searcher = c1.newSearcher(c2) ;
-		assertEquals(3+2, searcher.search("").size()) ; 
-	}
-	
-	public void testSearchWhenIndexing() throws Exception {
-		Searcher searcher = c1.newSearcher(c2) ;
-		assertEquals(5, searcher.search("").size()); 
-//		Debug.line();
-		
-		c2.newIndexer().asyncIndex(new IndexJob<Void>() {
-			@Override
-			public Void handle(IndexSession isession) throws Exception {
-				isession.updateDocument(isession.newDocument("long")) ;
-				Thread.sleep(500);
-				return null;
-			}
-		}) ;
-
-		for (int i = 0; i < 4; i++) {
-			Thread.sleep(100);
-			assertEquals(5, searcher.search("").size());
-		}
-		Thread.sleep(200);
-		assertEquals(6, searcher.search("").size());
-	}
-	
-	
-	public void testBlank() throws Exception {
-		Searcher esearcher = CompositeSearcher.createBlank() ;
-		
-		esearcher.search("").debugPrint(); 
-	}
-	
-
 }
+	

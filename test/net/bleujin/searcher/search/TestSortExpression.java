@@ -13,6 +13,12 @@ import net.ion.framework.util.RandomUtil;
 
 public class TestSortExpression extends AbTestCase{
 	
+	@Override
+	protected void tearDown() throws Exception {
+		sdc.index(DELETE_ALL) ;
+		super.tearDown();
+	}
+	
 	public void testEmpty() throws Exception {
 		
 		SortField[] sfs = new SortExpression().parseTest("") ;
@@ -66,12 +72,10 @@ public class TestSortExpression extends AbTestCase{
 	}
 	
 	public void testAtSearchRequest() throws Exception {
-		Central central = sampleTestDocument();
-		
-		Searcher newSearcher = central.newSearcher() ;
-		SearchRequest sreq = newSearcher.createRequest("(name:bleujin) AND (int:[100 TO 200])");
-		
-		SearchResponse result = SortExpression.applySort(sreq, "int").offset(5).find() ;
+		sdc.index(TEST100) ;
+
+		Searcher newSearcher = sdc.newSearcher() ;
+		SearchResponse result = newSearcher.createRequest("(name:bleujin) AND (int:[100 TO 200])").ascending("int").offset(5).find() ;
 
 		result.debugPrint(); 
 	}
@@ -88,7 +92,7 @@ public class TestSortExpression extends AbTestCase{
 			}
 		}) ;
 		
-		Searcher newSearcher = central.newSearcher() ;
+		Searcher newSearcher = sdc.newSearcher() ;
 		SearchResponse result = newSearcher.createRequest("(name:bleujin) AND (int:[100 TO 200])").descending("int").offset(5).find() ;
 		
 		result.debugPrint("int");

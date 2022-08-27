@@ -6,9 +6,13 @@ import java.util.List;
 import org.apache.ecs.xml.XML;
 import org.apache.lucene.search.ScoreDoc;
 
+import com.google.common.base.Predicate;
+
 import net.bleujin.searcher.common.ReadDocument;
+import net.ion.framework.db.Page;
 import net.ion.framework.util.Debug;
 import net.ion.framework.util.ListUtil;
+import net.ion.framework.util.StringUtil;
 
 public class SearchResponse {
 
@@ -46,10 +50,66 @@ public class SearchResponse {
 		List<ReadDocument> result = ListUtil.newList();
 		
 		for(int docId : docIds) {
-			result.add(ssession.readDocument(docId)) ;
+			result.add(ssession.readDocument(docId, sreq)) ;
 		}
 		return result;
 	}
+	
+	public SearchResponse filter(Predicate<ReadDocument> predic) throws IOException{
+		List<Integer> docIds = ListUtil.newList() ;
+		for (ReadDocument rdoc : getDocument()) {
+			if (predic.apply(rdoc)){
+				docIds.add(rdoc.docId()) ;
+			}
+		}
+		return new SearchResponse(ssession, sreq, docIds, docIds.size(), startTime) ;
+	}
+	
+
+	public PageResponse getDocument(Page page) {
+		List<Integer> result = ListUtil.newList();
+		
+		for (int i = page.getStartLoc(); i < Math.min(page.getEndLoc(), docIds.size()); i++) {
+			result.add(docIds.get(i));
+		}
+		
+		return PageResponse.create(this, result, page, docIds);
+	}
+	
+	public ReadDocument documentById(int docId) throws IOException {
+		return ssession.doc(docId, sreq) ;
+	}
+
+	public ReadDocument documentById(final String docIdValue) {
+		return eachDoc(new EachDocHandler<ReadDocument>() {
+			@Override
+			public ReadDocument handle(EachDocIterator iter) {
+				while (iter.hasNext()) {
+					ReadDocument rdoc = iter.next();
+					if (StringUtil.equals(docIdValue, rdoc.idValue()))
+						return rdoc;
+				}
+				throw new IllegalArgumentException("not found doc : " + docIdValue);
+			}
+		});
+	}
+	
+	public ReadDocument preDocBy(ReadDocument doc) throws IOException {
+		for(int i = 1 ; i <docIds.size() ; i++){
+			if (docIds.get(i) == doc.docId()) return documentById(docIds.get(i-1)) ;
+		}
+		return null ;
+	}
+	
+	public ReadDocument nextDocBy(ReadDocument doc) throws IOException {
+		for(int i = 0 ; i <docIds.size()-1 ; i++){
+			if (docIds.get(i) == doc.docId()) return documentById(docIds.get(i+1)) ;
+		}
+		return null ;
+	}
+	
+	
+	
 
 	public ReadDocument first() throws IOException {
 		List<ReadDocument> list = getDocument();
@@ -114,6 +174,10 @@ public class SearchResponse {
 
 	public int size() {
 		return Math.min(docIds.size(), sreq.offset());
+	}
+
+	public SearchSession searchSession() {
+		return ssession;
 	}
 
 }

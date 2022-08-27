@@ -12,6 +12,7 @@ import org.apache.lucene.store.Directory;
 import net.bleujin.searcher.SearchController;
 import net.bleujin.searcher.search.processor.PostProcessor;
 import net.bleujin.searcher.search.processor.PreProcessor;
+import net.ion.framework.util.SetUtil;
 
 public class SearchConfig {
 	
@@ -75,13 +76,13 @@ public class SearchConfig {
 	}
 	
 	
-	public SearchConfig addPostListener(final PostProcessor processor) {
-		postListeners.add(processor) ;
+	public SearchConfig addPostListener(PostProcessor... processors) {
+		SetUtil.create(processors).forEach(processor -> postListeners.add(processor)) ;
 		return this ;
 	}
 	
-	public SearchConfig addPreListener(final PreProcessor processor) {
-		preListeners.add(processor) ;
+	public SearchConfig addPreListener(PreProcessor... processors) {
+		SetUtil.create(processors).forEach(processor -> preListeners.add(processor)) ;
 		return this ;
 	}
 	

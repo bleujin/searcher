@@ -15,7 +15,7 @@ public class TestFieldType extends AbTestCase {
 			@Override
 			public Void handle(IndexSession isession) throws Exception {
 				isession.deleteAll() ;
-				isession.newDocument("bleujin").keyword("name", "bleujin").number("age", 20L).stext("explain", "hello bleujin").update() ;
+				isession.newDocument("bleujin").keyword("name", "bleujin").number("age", 20L).text("explain", "hello bleujin").update() ;
 				isession.newDocument("hero").keyword("name", "hero").number("age", 30).text("explain", "hi hero").update() ;
 				isession.newDocument("jin").keyword("name", "jin").number("age", 7).text("explain", "namaste jin").update() ;
 				return null;

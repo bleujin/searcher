@@ -1,15 +1,17 @@
 package net.bleujin.searcher.search;
 
 import net.bleujin.searcher.AbTestCase;
+import net.bleujin.searcher.Searcher;
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
-import net.ion.nsearcher.search.filter.FilterUtil;
-import net.ion.nsearcher.search.filter.TermFilter;
+import net.bleujin.searcher.util.QueryUtil;
 
 public class TestSearchRequest extends AbTestCase {
 
 	
+	private Searcher searcher;
+
 	@Override
 	protected void setUp() throws Exception {
 		super.setUp();
@@ -24,33 +26,31 @@ public class TestSearchRequest extends AbTestCase {
 				return null;
 			}
 		}) ;
+		this.searcher = sdc.newSearcher() ;
 	}
 	
 	public void testGetField() throws Exception {
 		ReadDocument doc = searcher.createRequest("bleujin").findOne();
 		String[] fields = doc.fieldNames() ;
-		assertEquals(3, fields.length); // except text field(default strategy not store texttype)
+		assertEquals(4, fields.length); 
 	}
 	
 	public void testTerm() throws Exception {
-		searcher.createRequest("").setFilter(QueryUtil.newBuilder().term("name", "jin").gte("int", 3).andBuild()).find().debugPrint();
+		searcher.createRequest(QueryUtil.newBuilder().term("name", "jin").gte("int", 3).andBuild()).find().debugPrint();
 	}
 	
-	public void testSearchFilter() throws Exception {
-		assertEquals(2, searcher.andFilter(QueryUtil.newBuilder().gte("int", 3).andBuild()).createRequest("").find().size()) ;
-		assertEquals(2, searcher.createRequest("").find().size());
-		
-		assertEquals(4, central.newSearcher().createRequest("").find().size()) ;
+	public void testSearchQuery() throws Exception {
+		assertEquals(2, searcher.createRequest(QueryUtil.newBuilder().gte("int", 3).andBuild()).find().size()) ;
+		assertEquals(4, sdc.newSearcher().createRequest("").find().size()) ;
 	}
 	
 	public void testSearchFilterApplied() throws Exception {
 //		central.newSearcher().andFilter(new TermFilter("name", "bleujin")).createRequest("").find().debugPrint();
-		central.newSearcher().andFilter(new TermFilter("name", "bleujin")).createRequest("")
-			.setFilter(QueryUtil.newBuilder().term("age", "30").gte("age", 40).andBuild()).find().debugPrint();
+		sdc.newSearcher().createRequest(QueryUtil.newBuilder().term("name", "bleujin").term("age", "30").gte("age", 40).andBuild()).find().debugPrint();
 	}
 	
 	public void testSort() throws Exception {
-		central.newSearcher().createRequest("").ascendingNum("age").find().debugPrint("age");
+		sdc.newSearcher().createRequest("").ascendingNum("age").find().debugPrint("age");
 	}
 	
 }

@@ -3,7 +3,7 @@ package net.bleujin.searcher.search;
 import junit.framework.TestCase;
 import net.bleujin.searcher.search.processor.LimitedChannel;
 
-public class LimitedChannelTest extends TestCase{
+public class TestLimitedChannel extends TestCase{
 
 	private LimitedChannel<Object> channels = null;
 	int MaxSize = 100;

@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Set;
 
 import org.apache.lucene.document.LongPoint;
+import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause;
@@ -24,21 +25,21 @@ public class QueryUtil {
 		return new QueryBuilder() ;
 	} 
 	
-	public final static Query and(Query filter1, Query filter2) {
-		return and(new Query[] { filter1, filter2 });
+	public final static Query and(Query query1, Query query2) {
+		return and(new Query[] { query1, query2 });
 	}
 
 	public final static Query and(Query... querys) {
 		if (querys == null || querys.length == 0) return null ;
 		
 		Builder result = new BooleanQuery.Builder() ;
-		int filterCount = 0 ;
-		for (Query filter : querys) {
-			if (filter == null) continue ;
-			filterCount++ ;
-			result.add(filter, BooleanClause.Occur.MUST);
+		int queryCount = 0 ;
+		for (Query query : querys) {
+			if (query == null) continue ;
+			queryCount++ ;
+			result.add(query, BooleanClause.Occur.MUST);
 		}
-		if (filterCount < 1) return null ;
+		if (queryCount < 1) return null ;
 		return result.build();
 	}
 
@@ -47,13 +48,13 @@ public class QueryUtil {
 		if (querys == null || querys.length == 0) return null ;
 
 		Builder result = new BooleanQuery.Builder() ;
-		int filterCount = 0 ;
+		int queryCount = 0 ;
 		for (Query query : querys) {
 			if (query == null) continue ;
-			filterCount++ ;
+			queryCount++ ;
 			result.add(query, Occur.SHOULD);
 		}
-		if (filterCount < 1) return null ;
+		if (queryCount < 1) return null ;
 		return result.build();
 	}
 	
@@ -62,13 +63,13 @@ public class QueryUtil {
 		if (querys == null || querys.length == 0) return null ;
 
 		Builder result = new BooleanQuery.Builder() ;
-		int filterCount = 0 ;
+		int queryCount = 0 ;
 		for (Query query : querys) {
 			if (query == null) continue ;
-			filterCount++ ;
+			queryCount++ ;
 			result.add(query, Occur.MUST_NOT);
 		}
-		if (filterCount < 1) return null ;
+		if (queryCount < 1) return null ;
 		return result.build();
 	}
 
@@ -77,8 +78,8 @@ public class QueryUtil {
 		return and (querys.toArray(new Query[0]));
 	}
 
-	public static Query or(Set<Query> filters) {
-		return or (filters.toArray(new Query[0]));
+	public static Query or(Set<Query> querys) {
+		return or (querys.toArray(new Query[0]));
 	}
 
 	
@@ -116,23 +117,23 @@ public class QueryUtil {
 
 
 	public static Query between(String fname, long lowerTerm, long upperTerm){
-		return LongPoint.newRangeQuery(fname, lowerTerm, upperTerm) ;
+		return NumericDocValuesField.newSlowRangeQuery(fname, lowerTerm, upperTerm) ;
 	}
 	
 	public static Query gt(String fname, long lowerTerm){
-		return LongPoint.newRangeQuery(fname, lowerTerm+1, Long.MAX_VALUE) ;
+		return NumericDocValuesField.newSlowRangeQuery(fname, lowerTerm+1, Long.MAX_VALUE) ;
 	}
 
 	public static Query gte(String fname, long lowerTerm){
-		return LongPoint.newRangeQuery(fname, lowerTerm, Long.MAX_VALUE) ;
+		return NumericDocValuesField.newSlowRangeQuery(fname, lowerTerm, Long.MAX_VALUE) ;
 	}
 
 	public static Query lt(String fname, long upperTerm){
-		return LongPoint.newRangeQuery(fname, Long.MIN_VALUE, upperTerm-1) ;
+		return NumericDocValuesField.newSlowRangeQuery(fname, Long.MIN_VALUE, upperTerm-1) ;
 	}
 
 	public static Query lte(String fname, long upperTerm){
-		return LongPoint.newRangeQuery(fname, Long.MIN_VALUE, upperTerm) ;
+		return NumericDocValuesField.newSlowRangeQuery(fname, Long.MIN_VALUE, upperTerm) ;
 	}
 
 

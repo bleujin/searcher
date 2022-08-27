@@ -15,6 +15,7 @@ import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
 import net.ion.framework.util.ArrayUtil;
+import net.ion.framework.util.Debug;
 import net.ion.framework.util.ListUtil;
 import net.ion.framework.util.NumberUtil;
 import net.ion.framework.util.SetUtil;
@@ -133,6 +134,10 @@ public class ReadDocument extends AbDocument {
 		ToStringHelper helper = Objects.toStringHelper(this.getClass());
 		helper.addValue(idValue()) ;
 		return helper.toString() ;
+	}
+
+	public String IdString() {
+		return doc.get(IKeywordField.DocKey);
 	}
 
 	

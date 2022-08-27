@@ -13,7 +13,8 @@ public interface EachDocHandler<T> {
 		@Override
 		public <T> T handle(EachDocIterator iter) {
 			while (iter.hasNext()) {
-				Debug.line(iter.next());
+				ReadDocument doc = iter.next();
+				Debug.line(doc);
 			}
 			return null;
 		}

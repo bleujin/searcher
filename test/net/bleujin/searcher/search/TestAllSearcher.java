@@ -2,9 +2,9 @@ package net.bleujin.searcher.search;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
-import net.ion.nsearcher.impl.TestField;
-import net.ion.nsearcher.impl.TestPostProcessor;
-import net.ion.nsearcher.index.TestReaderInfo;
+import net.bleujin.lucene.TestField;
+import net.bleujin.searcher.index.TestReaderInfo;
+import net.ion.radon.aclient.filter.TestFilter;
 
 public class TestAllSearcher extends TestSuite{
 
@@ -14,13 +14,11 @@ public class TestAllSearcher extends TestSuite{
 		ts.addTestSuite(TestBlank.class) ;
 		ts.addTestSuite(TestField.class);
 
-		ts.addTestSuite(TestPostProcessor.class);
 		ts.addTestSuite(TestFilter.class);
 
 		ts.addTestSuite(TestSearcher.class);
 		ts.addTestSuite(TestSort.class) ;
 		ts.addTestSuite(TestSearcherPaging.class) ;
-		ts.addTestSuite(TestSearchFilter.class) ;
 		ts.addTestSuite(TestQueryParser.class);
 		
 		ts.addTestSuite(TestMultiSearcher.class);

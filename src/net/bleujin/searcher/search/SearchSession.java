@@ -1,24 +1,29 @@
 package net.bleujin.searcher.search;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Set;
 
+import org.apache.commons.collections.SetUtils;
 import org.apache.lucene.document.Document;
+import org.apache.lucene.document.DocumentStoredFieldVisitor;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryparser.classic.ParseException;
-import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TopFieldDocs;
 
 import net.bleujin.searcher.SearchController;
+import net.bleujin.searcher.SearchRequestWrapper;
+import net.bleujin.searcher.common.IKeywordField;
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.reader.InfoReader;
-import net.ion.framework.util.ArrayUtil;
+import net.ion.framework.util.CollectionUtil;
+import net.ion.framework.util.SetUtil;
 import net.ion.framework.util.StringUtil;
 
 public class SearchSession {
@@ -35,6 +40,12 @@ public class SearchSession {
 		
 	}
 
+	public SearchRequest createRequest(SearchRequestWrapper wrequest) {
+		return createRequest(wrequest.query()).mapping(wrequest) ;
+	}
+
+	
+	
 	public static SearchSession create(SearchController sc, IndexSearcher isearcher, SearchConfig sconfig) throws IOException {
 		return new SearchSession(sc, isearcher, sconfig);
 	}
@@ -72,13 +83,17 @@ public class SearchSession {
 		return sres ;
 	}
 	
-	
 
-	public ReadDocument readDocument(int docId) throws IOException {
-		Document doc = isearcher.doc(docId) ;
+	public ReadDocument readDocument(int docId, SearchRequest sreq) throws IOException {
+		Document doc = sreq.selectorField().size() > 0 ? isearcher.doc(docId, SetUtil.add(sreq.selectorField(), IKeywordField.DocKey)) : isearcher.doc(docId) ;
 		return ReadDocument.loadDocument(docId, doc);
 	}
 
+	public ReadDocument doc(int docId, SearchRequest sreq) throws IOException {
+		Document doc = sreq.selectorField().size() > 0 ? isearcher.doc(docId, SetUtil.add(sreq.selectorField(), IKeywordField.DocKey)) : isearcher.doc(docId) ;
+		return ReadDocument.loadDocument(doc);
+	}
+	
 	public SearchConfig searchConfig() {
 		return sconfig;
 	}
@@ -87,9 +102,6 @@ public class SearchSession {
 		return isearcher.hashCode();
 	}
 
-	public ReadDocument doc(int docId) throws IOException {
-		return ReadDocument.loadDocument(isearcher.doc(docId));
-	}
 
 	
 	public InfoReader infoReader() throws IOException {
@@ -101,3 +113,4 @@ public class SearchSession {
 	}
 	
 }
+

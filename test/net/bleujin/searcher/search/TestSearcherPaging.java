@@ -17,7 +17,7 @@ public class TestSearcherPaging extends AbTestCase {
 		sdc.index(isession -> {
 			List<WriteDocument> docs = ListUtil.newList();
 			for (int i : ListUtil.rangeNum(100)) {
-				docs.add(isession.newDocument().unknown("idx", i).unknown("name", "bleujin"));
+				docs.add(isession.newDocument(i + " idx").unknown("idx", i).unknown("name", "bleujin"));
 			}
 			Collections.shuffle(docs);
 
@@ -29,7 +29,7 @@ public class TestSearcherPaging extends AbTestCase {
 		});
 		
 		List<ReadDocument> list = sdc.search(session->{
-			SearchResponse response = session.createRequest("bleujin").descending("idx _number").skip(4).offset(3).find();
+			SearchResponse response = session.createRequest("bleujin").descendingNum("idx").skip(4).offset(3).find();
 			assertEquals(3, response.size());
 			assertEquals(100, response.totalCount());
 

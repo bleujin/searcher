@@ -3,11 +3,13 @@ package net.bleujin.searcher.search;
 import java.io.StringReader;
 
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.CharArraySet;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.ko.KoreanAnalyzer;
 import org.apache.lucene.analysis.ko.KoreanPartOfSpeechStopFilter;
 import org.apache.lucene.analysis.ko.KoreanTokenizer.DecompoundMode;
 import org.apache.lucene.analysis.ko.dict.UserDictionary;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.queryparser.classic.QueryParser;
@@ -17,6 +19,7 @@ import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
 import net.bleujin.searcher.search.processor.StdOutProcessor;
 import net.ion.framework.util.Debug;
+import net.ion.framework.util.SetUtil;
 
 public class TestKoreanAnalyzer extends AbTestCase {
 
@@ -56,8 +59,7 @@ public class TestKoreanAnalyzer extends AbTestCase {
 		
 		res.debugPrint();
 	}
-	
-	
+
 	
 	public void testToken() throws Exception {
 		// Analyzer analyzer = new MyKoreanAnalyzer(Version.LUCENE_44, new CharArraySet(Version.LUCENE_44, ListUtil.toList("생각"), true)) ;// new CJKAnalyzer(Version.LUCENE_44, new CharArraySet(Version.LUCENE_44, ListUtil.toList("생각"), true)) ;
@@ -87,9 +89,25 @@ public class TestKoreanAnalyzer extends AbTestCase {
 			
 			return session.createRequest(term).find().size() > 0;
 		}) ;
-		
-
 	}
+	
+	
+	public void testStopWord() throws Exception {
+		CharArraySet swords = CharArraySet.copy(SetUtil.create("hero"));
+		final StandardAnalyzer analyzer = new StandardAnalyzer(swords) ;
+		
+		sdc.index(isesson ->{
+			isesson.indexConfig().indexAnalyzer(analyzer) ;
+			return isesson.newDocument().text("names", "bleujin hero jin").insertVoid() ;
+		}) ;
+		
+		assertEquals(1, sdc.newSearcher().createRequest("bleujin").find().size()) ;
+		assertEquals(0, sdc.newSearcher().createRequest("hero").find().size()) ;
+		assertEquals(1, sdc.newSearcher().createRequest("jin").find().size()) ;
+	}
+	
+	
+	
 	
 	
 	

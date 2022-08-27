@@ -1,13 +1,18 @@
 package net.bleujin.searcher;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.Date;
 
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 
 import junit.framework.TestCase;
 import net.bleujin.searcher.common.WriteDocument;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
+import net.ion.framework.util.RandomUtil;
 
 public class AbTestCase extends TestCase {
 
@@ -43,4 +48,27 @@ public class AbTestCase extends TestCase {
 			return null;
 		};
 	};
+	
+	protected IndexJob<Void> TEST100 = new IndexJob<Void>() {
+		public Void handle(IndexSession isession) throws IOException{
+			int count = 100 ;
+			LocalDateTime today = LocalDateTime.now();
+			String[] ranName = new String[]{"bleujin", "novision", "iihi", "k2sun"} ;
+			for (int j = 0; j < count; j++) {
+				WriteDocument myDoc = isession.newDocument() ;
+				myDoc.number("int", 100 + RandomUtil.nextInt(100)).date("date",  Date.from(today.plusDays(j).atZone(ZoneId.systemDefault()).toInstant())) ;
+				myDoc.keyword("name", ranName[j % ranName.length]).text("subject", RandomStringUtils.randomAlphabetic(20)).insertVoid() ;
+			}
+			return null ;
+		}
+	};
+	
+	protected IndexJob<Void> DELETE_ALL = new IndexJob<Void>() {
+		public Void handle(IndexSession isession) throws IOException {
+			isession.deleteAll(); 
+			return null ;
+		}
+	} ;
+	
+	
 }

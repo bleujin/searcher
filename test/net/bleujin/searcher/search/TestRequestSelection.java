@@ -1,31 +1,26 @@
 package net.bleujin.searcher.search;
 
-import java.util.List;
-
+import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.Searcher;
 import net.bleujin.searcher.common.ReadDocument;
+import net.bleujin.searcher.index.IndexJob;
 import net.ion.framework.util.Debug;
-import net.ion.nsearcher.ISTestCase;
-import net.ion.nsearcher.config.Central;
 
-public class TestRequestSelection extends ISTestCase {
+public class TestRequestSelection extends AbTestCase {
 
 	
-	private Central cen = null ; 
 	public void setUp() throws Exception {
 		super.setUp() ;
-		cen = sampleTestDocument() ;
 	}
 	
 	public void testSelection() throws Exception {
-		Searcher searcher = cen.newSearcher() ;
 		
-		SearchResponse response = searcher.createRequest("").selections("name").find();
+		sdc.index(IndexJob.SAMPLE_INSERT) ;
 		
-		List<ReadDocument> docs = response.getDocument();
-		for (ReadDocument doc : docs) {
-			Debug.debug(doc.asString("name"), doc.asString("int"), doc) ;
-		}
+		Searcher searcher = sdc.newSearcher() ;
+		
+		ReadDocument doc = searcher.createRequest("").selections("name").findOne() ;
+		Debug.debug(doc.asString("name"), doc.asString("age"), doc, doc.IdString()) ; // if setted selection, ignore key too
 		
 	}
 	

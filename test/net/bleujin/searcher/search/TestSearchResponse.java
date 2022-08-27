@@ -1,16 +1,19 @@
 package net.bleujin.searcher.search;
 
+import java.util.Set;
+
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
-import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
 import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
+import net.bleujin.searcher.util.QueryUtil;
 import net.ion.framework.db.Page;
 import net.ion.framework.util.Debug;
+import net.ion.framework.util.SetUtil;
 
 public class TestSearchResponse extends AbTestCase {
 
@@ -30,7 +33,7 @@ public class TestSearchResponse extends AbTestCase {
 	}
 	
 	public void testPageList() throws Exception {
-		final SearchResponse sres = sdc.newSearcher().createRequest("int:[10 TO 50]").sort("int desc").find();
+		final SearchResponse sres = sdc.newSearcher().createRequest("int:[10 TO 50]").ascendingNum("int").find();
 		for(ReadDocument rdoc : sres.getDocument(Page.create(5, 2, 5))) {
 			Debug.line(rdoc);
 		}
@@ -42,12 +45,12 @@ public class TestSearchResponse extends AbTestCase {
 	}
 	
 	public void testInOpern() throws Exception {
-		BooleanQuery bq = new BooleanQuery() ;
+		Set<Query>querys = SetUtil.newSyncSet() ;
 		for (int artid : new int[]{30, 40, 50}) {
-			bq.add(new TermQuery(new Term("int", ""+artid)), Occur.SHOULD);
+			querys.add(new TermQuery(new Term("int", ""+artid)));
 		}
-		
-		sdc.newSearcher().createRequest(bq).find().debugPrint();
+
+		sdc.newSearcher().createRequest(QueryUtil.or(querys)).find().debugPrint();
 	}
 	
 	

@@ -11,7 +11,7 @@ import net.ion.framework.util.SetUtil;
 public class QueryBuilder {
 
 
-	private Set<Query> filters = SetUtil.newOrdereddSet();
+	private Set<Query> querys = SetUtil.newOrdereddSet();
 
 	public QueryBuilder term(String fname, String... values){
 		return add(QueryUtil.term(fname, values)) ;
@@ -28,14 +28,14 @@ public class QueryBuilder {
 	}
 	
 	
-	private QueryBuilder add(Query filter) {
-		filters.add(filter) ;
+	private QueryBuilder add(Query query) {
+		querys.add(query) ;
 		return this ;
 	}
 
 
-	public QueryBuilder filter(Query filter){
-		add(filter) ;
+	public QueryBuilder filter(Query query){
+		add(query) ;
 		return this ;
 	}
 	
@@ -80,11 +80,11 @@ public class QueryBuilder {
 	}
 
 	public Query andBuild() {
-		return QueryUtil.and(filters) ;
+		return QueryUtil.and(querys) ;
 	}
 
 	public Query orBuild() {
-		return QueryUtil.or(filters) ;
+		return QueryUtil.or(querys) ;
 	}
 
 

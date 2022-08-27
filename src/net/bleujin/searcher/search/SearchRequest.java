@@ -7,14 +7,19 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.ecs.xml.XML;
+import org.apache.lucene.document.DocumentStoredFieldVisitor;
+import org.apache.lucene.index.StoredFieldVisitor;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
+import org.apache.lucene.search.SortField;
+import org.apache.lucene.search.SortField.Type;
 
+import net.bleujin.searcher.SearchRequestWrapper;
 import net.bleujin.searcher.common.ReadDocument;
 import net.ion.framework.db.Page;
 import net.ion.framework.util.ListUtil;
 import net.ion.framework.util.MapUtil;
-import net.ion.framework.util.StringUtil;
+import net.ion.framework.util.SetUtil;
 
 
 public class SearchRequest {
@@ -24,7 +29,8 @@ public class SearchRequest {
 	private int skip  = 0 ;
 	private int offset = 100;
 	private Map<String, Object> param = MapUtil.newCaseInsensitiveMap() ;
-	private List<String> sortExpression = ListUtil.newList();
+	private Set<SortField> sortFields = SetUtil.newSet() ;
+	private Set<String> columns = SetUtil.newSet() ;
 
 	SearchRequest(SearchSession ssession, Query query) {
 		this.ssession = ssession ;
@@ -88,11 +94,9 @@ public class SearchRequest {
 	}
 	
 	
-	// TODO
 	public Sort sort() {
-		return Sort.RELEVANCE ;
-//		if (sortExpression.size() == 0) return Sort.RELEVANCE ;
-//		return new Sort(SortExpression.parse(indexFieldType, sortExpression.toArray(new String[0]))) ;	
+		if (sortFields.size() == 0) return Sort.RELEVANCE ;
+		return new Sort(sortFields.toArray(new SortField[0])) ;	
 	}
 
 	
@@ -100,7 +104,7 @@ public class SearchRequest {
 	public XML toXML() {
 		XML request = new XML("request");
 		request.addElement(new XML("query").addElement(query.toString()));
-		request.addElement(new XML("sort").addElement(sortExpression.toString()));
+		request.addElement(new XML("sort").addElement(sortFields.toString()));
 
 		XML page = new XML("page");
 		page.addAttribute("skip", String.valueOf(skip()));
@@ -122,33 +126,55 @@ public class SearchRequest {
 		return toXML().toString() ;
 	}
 	
+	// TODO
 	public SearchRequest sort(String expr){
-		if (StringUtil.isBlank(expr)) return this ;
-		for (String e : StringUtil.split(expr, ",")) {
-			sortExpression.add(e) ;
-		}
+
 		return this ;
 	}
 
 	public SearchRequest ascending(String field) {
-		sortExpression.add(field);
+		sortFields.add(new SortField(field, Type.STRING));
 		return this ;
 	}
 
 	public SearchRequest descending(String field) {
-		sortExpression.add(field + " desc");
+		sortFields.add(new SortField(field, Type.STRING, true));
 		return this ;
 	}
 
 	public SearchRequest ascendingNum(String field) {
-		sortExpression.add(field + " _number");
+		sortFields.add(new SortField(field, Type.LONG));
 		return this ;
 	}
 
 	public SearchRequest descendingNum(String field) {
-		sortExpression.add(field + " _number desc");
+		sortFields.add(new SortField(field, Type.LONG, true));
 		return this ;
 	}
 
 
+	public SearchRequest selections(String... cols) {
+		for (String col : cols) {
+			this.columns.add(col) ;
+		}
+		return this;
+	}
+
+	
+	public Set<String> selectorField(){
+		return columns ;
+	}
+	
+	public StoredFieldVisitor selector(){
+		return columns.size() == 0 ? null : new DocumentStoredFieldVisitor(columns) ;
+	}
+
+	public SearchRequest mapping(SearchRequestWrapper wrequest) {
+		this.sortFields =  wrequest.sortField() ;
+		this.skip = wrequest.skip() ;
+		this.offset = wrequest.offset() ;
+		this.columns = wrequest.selectorField() ;
+		wrequest.paramKeys().forEach(key -> this.setParam(key, wrequest.getParam(key)));
+		return this ;
+	}
 }

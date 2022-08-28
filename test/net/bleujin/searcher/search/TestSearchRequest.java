@@ -1,5 +1,11 @@
 package net.bleujin.searcher.search;
 
+import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.Query;
+
 import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.Searcher;
 import net.bleujin.searcher.common.ReadDocument;
@@ -52,4 +58,14 @@ public class TestSearchRequest extends AbTestCase {
 		sdc.newSearcher().createRequest("").ascendingNum("age").find().debugPrint("age");
 	}
 	
+	
+	public void testMultiFieldSearch() throws Exception {
+		Analyzer analyzer = new StandardAnalyzer() ;
+		Query query = MultiFieldQueryParser.parse("jin", new String[]{"name","explain"}, new Occur[] {Occur.MUST, Occur.SHOULD}, analyzer);
+		
+		sdc.search(session ->{
+			session.createRequest(query).find().debugPrint() ;
+			return null ;
+		}) ;
+	}
 }

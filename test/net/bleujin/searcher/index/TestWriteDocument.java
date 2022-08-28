@@ -62,7 +62,7 @@ public class TestWriteDocument extends AbTestCase {
 
 	}
 
-	public void testInLucene() throws Exception {
+	public void xtestInLucene() throws Exception {
 
 		Directory directory = sdc.dir();
 

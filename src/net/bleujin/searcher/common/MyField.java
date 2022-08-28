@@ -15,6 +15,7 @@ import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexableFieldType;
 
+import net.bleujin.searcher.index.VTextField;
 import net.ion.framework.util.DateUtil;
 import net.ion.framework.util.NumberUtil;
 import net.ion.framework.util.ObjectUtil;
@@ -109,6 +110,10 @@ public class MyField {
 
 	public static MyField text(String name, String value) {
 		return new MyField(new TextField(name, value, Store.YES), MyFieldType.Text);
+	}
+
+	public static MyField vtext(String name, String value) {
+		return new MyField(new VTextField(name, value, Store.YES), MyFieldType.Text);
 	}
 
 	public static MyField notext(String name, String value) {

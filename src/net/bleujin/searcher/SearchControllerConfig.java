@@ -3,6 +3,7 @@ package net.bleujin.searcher;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.concurrent.ExecutorService;
 
 import org.apache.lucene.analysis.Analyzer;
@@ -35,7 +36,7 @@ public class SearchControllerConfig {
 	}
 
 	public static SearchControllerConfig newLocalFile(String path) throws IOException {
-		Directory dir = FSDirectory.open(Path.of(path)) ;
+		Directory dir = FSDirectory.open(Paths.get(path)) ;
 		return new SearchControllerConfig(dir);
 	}
 

@@ -1,5 +1,6 @@
 package net.bleujin.searcher;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -8,7 +9,6 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexNotFoundException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -27,10 +27,9 @@ import net.bleujin.searcher.search.SearchConfig;
 import net.bleujin.searcher.search.SearchJob;
 import net.bleujin.searcher.search.SearchResponse;
 import net.bleujin.searcher.search.SearchSession;
-import net.ion.framework.util.Debug;
 import net.ion.framework.util.IOUtil;
 
-public class SearchController {
+public class SearchController implements Closeable{
 
 	private SearchControllerConfig config;
 	private Directory dir;

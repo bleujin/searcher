@@ -21,6 +21,10 @@ public class TestIndexAsync extends TestCase {
 		SearchController sdc = SearchControllerConfig.newLocalFile("./resource/temp").defaultExecutorService(Executors.newCachedThreadPool()).build(OpenMode.CREATE);
 
 		List<Future> futures = ListUtil.newList() ;
+		sdc.index(isession-> {
+			isession.deleteAll() ;
+			return null ;
+		}) ;
 		for (int i = 0; i < 3; i++) {
 			Future<Void> future = sdc.indexAsync(new IndexJob<Void>() {
 				@Override

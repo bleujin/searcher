@@ -1,26 +1,17 @@
 package net.bleujin.lucene;
 
-import java.nio.ByteBuffer;
 import java.util.Date;
 
 import org.apache.lucene.analysis.core.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.DoubleDocValuesField;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.FieldType;
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.SortedDocValuesField;
-import org.apache.lucene.document.SortedNumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.FilterNumericDocValues;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
-import org.apache.lucene.index.NumericDocValues;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.MatchAllDocsQuery;
@@ -33,6 +24,7 @@ import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.BytesRef;
 
 import junit.framework.TestCase;
+import net.bleujin.searcher.index.VTextField;
 import net.ion.framework.util.DateUtil;
 import net.ion.framework.util.Debug;
 import net.ion.framework.util.IOUtil;
@@ -86,7 +78,7 @@ public class TestField extends TestCase {
 		doc.add(new StringField("name", name, Store.YES)); // keyword
 		doc.add(new SortedDocValuesField("name", new BytesRef(name)));
 		
-		doc.add(new TextField("content", content, Store.YES)); // text
+		doc.add(new VTextField("content", content, Store.YES)); // text
 		
 		doc.add(new NumericDocValuesField("age", age)); // number
 		doc.add(new StringField("age", "" + age, Store.NO)); 

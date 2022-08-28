@@ -10,33 +10,18 @@ import static net.bleujin.searcher.common.IKeywordField.TIMESTAMP;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang.ArrayUtils;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.IndexOptions;
-import org.apache.lucene.index.IndexableField;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Sets;
-
-import net.bleujin.searcher.common.MyField.MyFieldType;
 import net.bleujin.searcher.index.IndexSession;
 import net.ion.framework.parse.gson.JsonElement;
 import net.ion.framework.parse.gson.JsonObject;
 import net.ion.framework.parse.gson.JsonUtil;
-import net.ion.framework.util.ArrayUtil;
-import net.ion.framework.util.DateUtil;
-import net.ion.framework.util.Debug;
 import net.ion.framework.util.HashFunction;
-import net.ion.framework.util.ListUtil;
 import net.ion.framework.util.MapUtil;
 import net.ion.framework.util.ObjectId;
 import net.ion.framework.util.SetUtil;
@@ -216,12 +201,6 @@ public class WriteDocument extends AbDocument {
 		return this;
 	}
 
-	public WriteDocument vtext(String fieldName, String value) {
-		if (StringUtil.isBlank(value)) return this ;
-		add(MyField.vtext(fieldName, value));
-		return this;
-	}
-	
 	public WriteDocument number(String fieldName, long value) {
 		add(MyField.number(fieldName, value));
 		return this;

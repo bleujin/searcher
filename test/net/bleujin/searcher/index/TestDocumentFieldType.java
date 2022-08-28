@@ -12,6 +12,7 @@ import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.common.MyField.MyFieldType;
 import net.bleujin.searcher.common.WriteDocument;
 import net.ion.framework.util.DateUtil;
+import net.ion.framework.util.Debug;
 
 public class TestDocumentFieldType extends AbTestCase {
 
@@ -50,7 +51,7 @@ public class TestDocumentFieldType extends AbTestCase {
 		assertEquals(1, sdc.search("age:20").totalCount());
 	}
 	
-	public void testKetyword() throws Exception {
+	public void testKeyword() throws Exception {
 		sdc.index(isession ->{  // indexing whitespaceAnalyzer
 			return isession.newDocument("1").unknown("name", "H & P").insertVoid() ; // text
 		}) ;
@@ -88,7 +89,7 @@ public class TestDocumentFieldType extends AbTestCase {
 	
 	public void testNumber() throws Exception {
 		sdc.index(isession ->{  // indexing stringType
-			return isession.newDocument("1").keyword("name", "7").insertVoid() ; // text
+			return isession.newDocument("1").keyword("name", "7").insertVoid() ; // keyword
 		}) ;
 		
 		sdc.search(session ->{
@@ -109,7 +110,7 @@ public class TestDocumentFieldType extends AbTestCase {
 		
 		sdc.index(isession ->{  // indexing numberType
 			isession.indexConfig().fieldType("name", MyFieldType.Number) ;
-			return isession.newDocument("1").keyword("name", "7").insertVoid() ; // text
+			return isession.newDocument("1").keyword("name", "7").insertVoid() ; 
 		}) ;
 		
 		sdc.search(session ->{
@@ -121,7 +122,20 @@ public class TestDocumentFieldType extends AbTestCase {
 			assertEquals(1, session.createRequest(NumericDocValuesField.newSlowRangeQuery("name", 1, 10)).find().totalCount()) ; // numberRange working
 			return null;
 		}) ;
-
+	}
+	
+	public void testTextType() throws Exception {
+		sdc.index(isession ->{  // indexing stringType
+			WriteDocument wdoc = isession.newDocument("1").keyword("name", "bleujin").text("cook", "육류, 치즈");
+			assertTrue(wdoc.get("cook").fieldType().storeTermVectors()) ;
+			return wdoc.insertVoid() ; // 
+		}) ;
+		
+		sdc.index(isession->{
+			WriteDocument wdoc = isession.loadDocument("1") ;
+			assertTrue(wdoc.get("cook").fieldType().storeTermVectors()) ; 
+			return null ;
+		}) ;
 		
 	}
 }

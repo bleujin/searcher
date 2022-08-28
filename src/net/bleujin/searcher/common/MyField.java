@@ -6,12 +6,9 @@ import java.util.Date;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.FieldType;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
-import org.apache.lucene.index.IndexOptions;
 import org.apache.lucene.index.IndexableField;
 import org.apache.lucene.index.IndexableFieldType;
 
@@ -44,8 +41,8 @@ public class MyField {
 				return date(ifield.name(), toDateString(ifield.stringValue())) ;
 			}
 		} else { // number or text
-			if (ifield.numericValue() == null) { // text
-				return text(ifield.name(), ifield.stringValue()) ;
+			if (ifield.numericValue() == null) { // text 
+				return  text(ifield.name(), ifield.stringValue()) ;
 			} else { // number
 				return number(ifield.name(), ifield.numericValue().longValue()) ; 
 			}
@@ -77,7 +74,7 @@ public class MyField {
 		} else if (mtype == MyFieldType.Keyword) {
 			this.ifield = new StringField(ifield.name(), ifield.stringValue(), Store.YES) ;
 		} else if (mtype == MyFieldType.Text) {
-			this.ifield = new TextField(ifield.name(), ifield.stringValue(), Store.YES) ;
+			this.ifield = new VTextField(ifield.name(), ifield.stringValue(), Store.YES) ;
 		} else if (mtype == MyFieldType.Date) {
 			this.ifield = new StringField(ifield.name(), ifield.stringValue(), Store.YES) ;
 		}
@@ -109,15 +106,11 @@ public class MyField {
 	}
 
 	public static MyField text(String name, String value) {
-		return new MyField(new TextField(name, value, Store.YES), MyFieldType.Text);
-	}
-
-	public static MyField vtext(String name, String value) {
 		return new MyField(new VTextField(name, value, Store.YES), MyFieldType.Text);
 	}
 
 	public static MyField notext(String name, String value) {
-		return new MyField(new TextField(name, value, Store.NO), MyFieldType.Text);
+		return new MyField(new VTextField(name, value, Store.NO), MyFieldType.Text);
 	}
 	
 	public static MyField date(String name, Date date){ 
@@ -162,7 +155,7 @@ public class MyField {
 		if (isKeywordType(value)){
 			return keyword(name, value) ;
 		} else
-			return new MyField( analyze ? (new TextField(name, value, store)) : (new StringField(name, value, store)), fieldType);
+			return new MyField( analyze ? (new VTextField(name, value, store)) : (new StringField(name, value, store)), fieldType);
 	}
 
 	public static MyField unknown(String name, Object value) {

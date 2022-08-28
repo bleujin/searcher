@@ -15,7 +15,6 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
@@ -28,10 +27,10 @@ import org.apache.lucene.store.Directory;
 
 import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.Searcher;
-import net.bleujin.searcher.common.MyField;
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
+import net.bleujin.searcher.index.VTextField;
 import net.ion.framework.parse.gson.JsonArray;
 import net.ion.framework.parse.gson.JsonObject;
 import net.ion.framework.util.Debug;
@@ -127,7 +126,7 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 
 	private static void addDoc(IndexWriter w, String title, String isbn) throws IOException {
 		Document doc = new Document();
-		doc.add(new TextField("title", title, Store.YES));
+		doc.add(new VTextField("title", title, Store.YES));
 		doc.add(new StringField("isbn", isbn, Store.YES));
 		w.addDocument(doc);
 	}

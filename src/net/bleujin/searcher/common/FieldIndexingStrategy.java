@@ -1,27 +1,18 @@
 package net.bleujin.searcher.common;
 
-import java.io.Reader;
 import java.util.Date;
 
-import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.DoubleDocValuesField;
-import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Store;
-import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.document.SortedDocValuesField;
 import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
-import org.apache.lucene.document.TextField;
 import org.apache.lucene.index.IndexableField;
-import org.apache.lucene.index.IndexableFieldType;
 import org.apache.lucene.util.BytesRef;
 
 import net.bleujin.searcher.common.MyField.MyFieldType;
 import net.bleujin.searcher.index.IndexConfig;
 import net.ion.framework.util.DateUtil;
-import net.ion.framework.util.NumberUtil;
 import net.ion.framework.util.StringUtil;
 
 public abstract class FieldIndexingStrategy {
@@ -85,7 +76,7 @@ public abstract class FieldIndexingStrategy {
 //doc.add(new StringField("name", name, Store.YES)); // keyword
 //doc.add(new SortedDocValuesField("name", new BytesRef(name)));
 //
-//doc.add(new TextField("content", content, Store.YES)); // text
+//doc.add(new VTextField("content", content, Store.YES)); // text
 //
 //doc.add(new NumericDocValuesField("age", age)); // number
 //doc.add(new StringField("age", "" + age, Store.NO)); 

@@ -53,7 +53,5 @@ public class TestSearchResponse extends AbTestCase {
 		sdc.newSearcher().createRequest(QueryUtil.or(querys)).find().debugPrint();
 	}
 	
-	
-	
 
 }

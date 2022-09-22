@@ -2,6 +2,7 @@ package net.bleujin.searcher.extend;
 
 import java.io.IOException;
 
+import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.search.highlight.InvalidTokenOffsetsException;
 
 import net.bleujin.searcher.AbTestCase;
@@ -50,3 +51,4 @@ public class TestHighlight extends AbTestCase {
 	}
 
 }
+

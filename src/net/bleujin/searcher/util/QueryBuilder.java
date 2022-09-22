@@ -2,10 +2,8 @@ package net.bleujin.searcher.util;
 
 import java.util.Set;
 
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.Query;
 
-import net.bleujin.searcher.Searcher;
 import net.ion.framework.util.SetUtil;
 
 public class QueryBuilder {
@@ -23,10 +21,6 @@ public class QueryBuilder {
 	}
 
 
-	public QueryBuilder query(String query, Searcher searcher) throws ParseException{
-		return add(QueryUtil.query(query, searcher)) ;
-	}
-	
 	
 	private QueryBuilder add(Query query) {
 		querys.add(query) ;
@@ -34,11 +28,6 @@ public class QueryBuilder {
 	}
 
 
-	public QueryBuilder filter(Query query){
-		add(query) ;
-		return this ;
-	}
-	
 	public QueryBuilder between(String fname, String lowerTerm, String upperTerm){
 		return add(QueryUtil.between(fname, lowerTerm, upperTerm)) ;
 	}

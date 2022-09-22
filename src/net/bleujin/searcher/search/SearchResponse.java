@@ -153,7 +153,7 @@ public class SearchResponse {
 		eachDoc(new EachDocHandler<Void>() {
 
 			@Override
-			public <T> T handle(EachDocIterator iter) {
+			public Void handle(EachDocIterator iter) {
 				while (iter.hasNext()) {
 					ReadDocument next = iter.next();
 					List list = ListUtil.newList();

@@ -3,10 +3,8 @@ package net.bleujin.searcher.util;
 import java.util.Collection;
 import java.util.Set;
 
-import org.apache.lucene.document.LongPoint;
 import org.apache.lucene.document.NumericDocValuesField;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.queryparser.classic.ParseException;
 import org.apache.lucene.search.BooleanClause;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -16,7 +14,6 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.TermRangeQuery;
 import org.apache.lucene.util.BytesRef;
 
-import net.bleujin.searcher.Searcher;
 import net.ion.framework.util.SetUtil;
 
 public class QueryUtil {
@@ -90,10 +87,6 @@ public class QueryUtil {
 		}
 		return and(set) ;
 	}
-
-	public static Query query(String query, Searcher searcher) throws ParseException{
-		return and(searcher.parseQuery(query)) ;
-	}
 	
 	public static TermRangeQuery between(String fname, String lowerTerm, String upperTerm){
 		return new TermRangeQuery(fname, new BytesRef(lowerTerm), new BytesRef(upperTerm), true, true) ;
@@ -121,19 +114,19 @@ public class QueryUtil {
 	}
 	
 	public static Query gt(String fname, long lowerTerm){
-		return NumericDocValuesField.newSlowRangeQuery(fname, lowerTerm+1, Long.MAX_VALUE) ;
+		return between(fname, lowerTerm+1, Long.MAX_VALUE) ;
 	}
 
 	public static Query gte(String fname, long lowerTerm){
-		return NumericDocValuesField.newSlowRangeQuery(fname, lowerTerm, Long.MAX_VALUE) ;
+		return between(fname, lowerTerm, Long.MAX_VALUE) ;
 	}
 
 	public static Query lt(String fname, long upperTerm){
-		return NumericDocValuesField.newSlowRangeQuery(fname, Long.MIN_VALUE, upperTerm-1) ;
+		return between(fname, Long.MIN_VALUE, upperTerm-1) ;
 	}
 
 	public static Query lte(String fname, long upperTerm){
-		return NumericDocValuesField.newSlowRangeQuery(fname, Long.MIN_VALUE, upperTerm) ;
+		return between(fname, Long.MIN_VALUE, upperTerm) ;
 	}
 
 

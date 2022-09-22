@@ -24,14 +24,15 @@ public final class VTextField extends Field {
 	}
 
 	static {
-		TYPE_NOT_STORED.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
-		TYPE_NOT_STORED.setTokenized(true);
+		TYPE_NOT_STORED.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
 		TYPE_NOT_STORED.setStoreTermVectors(true);
+		TYPE_NOT_STORED.setTokenized(true);
 		TYPE_NOT_STORED.freeze();
-		TYPE_STORED.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS);
-		TYPE_STORED.setTokenized(true);
+		TYPE_STORED.setIndexOptions(IndexOptions.DOCS_AND_FREQS_AND_POSITIONS_AND_OFFSETS);
 		TYPE_STORED.setStored(true);
 		TYPE_STORED.setStoreTermVectors(true);
+		TYPE_STORED.setTokenized(true);
+		TYPE_STORED.setStoreTermVectorOffsets(true);
 		TYPE_STORED.freeze();
 	}
 }

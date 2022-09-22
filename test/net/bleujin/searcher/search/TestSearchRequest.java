@@ -41,6 +41,11 @@ public class TestSearchRequest extends AbTestCase {
 		assertEquals(4, fields.length); 
 	}
 	
+	public void testRequestByKey() throws Exception {
+		ReadDocument doc = searcher.createRequestByKey("bleujin").findOne();
+		assertEquals("bleujin", doc.IdString());
+	}
+	
 	public void testTerm() throws Exception {
 		searcher.createRequest(QueryUtil.newBuilder().gte("int", 3).andBuild()).descendingNum("int").find().debugPrint("int");
 	}

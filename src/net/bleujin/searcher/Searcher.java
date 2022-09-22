@@ -12,6 +12,7 @@ import org.apache.lucene.search.MatchAllDocsQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 
+import net.bleujin.searcher.common.IKeywordField;
 import net.bleujin.searcher.common.SearchConstant;
 import net.bleujin.searcher.search.SearchResponse;
 import net.bleujin.searcher.search.processor.PostProcessor;
@@ -41,6 +42,12 @@ public class Searcher {
 		
 		return createRequest(pquery);
 	}
+	
+	public SearchRequestWrapper createRequestByKey(String docId) throws ParseException {
+		return createRequest(IKeywordField.DocKey, docId);
+	}
+
+
 
 	public SearchRequestWrapper createRequest(String term, String value) throws ParseException {
 		return createRequest(new TermQuery(new Term(term, value)));

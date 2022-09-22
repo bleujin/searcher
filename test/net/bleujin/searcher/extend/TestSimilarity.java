@@ -12,6 +12,7 @@ import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
 import net.bleujin.searcher.index.VTextField;
+import net.bleujin.searcher.search.SearchRequest;
 import net.bleujin.searcher.search.SearchResponse;
 import net.bleujin.searcher.search.SimilaryDocs;
 import net.ion.framework.util.Debug;
@@ -34,20 +35,18 @@ public class TestSimilarity extends AbTestCase {
 			}
 		}) ;
 		
-		SearchResponse group = sdc.newSearcher().createRequest("").find() ;
-		BaseSimilarity bs = group.similarity(group.first()) ;
+		SimilaryDocs sdocs = sdc.search(session ->{
+			ReadDocument fdoc = session.createRequestByKey("111").findOne() ;
+			SearchResponse sr = session.createRequest("").find() ;
+			
+			SimilaryDocs sd = session.similaryDocs(fdoc, "cook", sr) ;
+			
+			return sd.limit(5).overWeight(0.01d);
+		}) ;
 		
 		
-		
-		
-		SimilaryDocs sd = bs.foundBy("cook") ;
-		
-		SimilaryDocs sdocs = sd.limit(5).overWeight(0.01d);
 		sdocs.debugPrint(); 
-		
-		List<ReadDocument> docs = sdocs.docs() ;
-		docs.forEach(doc -> Debug.line(doc));
-		
+		sdocs.docs().forEach(doc -> Debug.line(doc));
 	}
 	
 }

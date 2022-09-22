@@ -6,9 +6,10 @@ import java.util.List;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexCommit;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.store.Directory;
 
 import net.bleujin.searcher.AbTestCase;
-import net.bleujin.searcher.reader.InfoReader.InfoHandler;
+import net.bleujin.searcher.reader.InfoHandler;
 import net.ion.framework.util.Debug;
 
 public class TestReaderInfo extends AbTestCase {
@@ -21,16 +22,19 @@ public class TestReaderInfo extends AbTestCase {
 			return null ;
 		});
 
-		sdc.infoReader().info(new InfoHandler<Void>() {
+		sdc.info(new InfoHandler<Void>() {
 			@Override
-			public Void view(IndexReader ireader, DirectoryReader dreader) throws IOException {
-				List<IndexCommit> cms = DirectoryReader.listCommits(dreader.directory());
+			public Void view(IndexReader ireader, Directory dreader) throws IOException {
+				List<IndexCommit> cms = DirectoryReader.listCommits(dreader);
 
 				for (IndexCommit ic : cms) {
-					Debug.line(ic.getUserData(), ic.getSegmentsFileName(), dreader.getIndexCommit().getSegmentsFileName());
+					Debug.line(ic.getUserData(), ic.getSegmentsFileName(), ic);
 				}
 				return null;
 			}
 		});
+		
+		
+		
 	}
 }

@@ -16,6 +16,7 @@ import org.apache.lucene.search.SortField.Type;
 
 import net.bleujin.searcher.SearchRequestWrapper;
 import net.bleujin.searcher.common.ReadDocument;
+import net.bleujin.searcher.extend.HighlightTerm;
 import net.ion.framework.db.Page;
 import net.ion.framework.util.ListUtil;
 import net.ion.framework.util.MapUtil;
@@ -31,6 +32,7 @@ public class SearchRequest {
 	private Map<String, Object> param = MapUtil.newCaseInsensitiveMap() ;
 	private Set<SortField> sortFields = SetUtil.newSet() ;
 	private Set<String> columns = SetUtil.newSet() ;
+	private HighlightTerm highlightTerm = HighlightTerm.NONE ;
 
 	SearchRequest(SearchSession ssession, Query query) {
 		this.ssession = ssession ;
@@ -186,5 +188,14 @@ public class SearchRequest {
 		wrequest.paramKeys().forEach(key -> this.setParam(key, wrequest.getParam(key)));
 		this.sortFields =  wrequest.sortField() ;
 		return this ;
+	}
+
+	public SearchRequest highlight(String field, String matchedValue) {
+		this.highlightTerm = new HighlightTerm(field, matchedValue) ;
+		return this;
+	}
+	
+	public HighlightTerm highlightTerm() {
+		return this.highlightTerm ;
 	}
 }

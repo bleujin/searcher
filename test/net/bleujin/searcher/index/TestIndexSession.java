@@ -7,6 +7,7 @@ import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.SearchController;
 import net.bleujin.searcher.SearchControllerConfig;
 import net.bleujin.searcher.common.MyField;
+import net.bleujin.searcher.reader.InfoHandler;
 import net.ion.framework.util.DateUtil;
 import net.ion.framework.util.Debug;
 import net.ion.framework.util.ListUtil;
@@ -32,7 +33,7 @@ public class TestIndexSession extends AbTestCase {
 	public void testCommitUserData() throws Exception {
 		sdc.index(new AddFiveEntryJob("hero"));
 		
-		Map<String, String> map = sdc.infoReader().commitUserData();
+		Map<String, String> map = sdc.info(InfoHandler.COMMIT_DATA);
 		assertEquals(true, map.containsKey("lastmodified"));
 		assertEquals(true, map.containsKey("name"));
 	}

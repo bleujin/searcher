@@ -26,8 +26,11 @@ public class Suggester {
 	
 	
 	public Suggester build(String fieldName) throws IOException {
-		Dictionary dict = new LuceneDictionary(sdc.indexReader(), fieldName); // new WordFreqArrayIterator(wordFreqs)
-		inner.build(dict);
+		sdc.search(session ->{
+			Dictionary dict = new LuceneDictionary(session.indexReader(), fieldName); // new WordFreqArrayIterator(wordFreqs)
+			inner.build(dict);
+			return null ;
+		}) ;
 
 		return this ;
 	}

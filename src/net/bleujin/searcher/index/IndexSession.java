@@ -126,11 +126,6 @@ public class IndexSession {
 		return ssession ;
 	}
 	
-	public IndexReader reader() throws IOException {
-		return searchSession().indexReader();
-	}
-
-	
 	public FieldIndexingStrategy fieldIndexingStrategy() {
 		return fieldIndexingStrategy;
 	}

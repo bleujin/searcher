@@ -12,10 +12,10 @@ import javax.ws.rs.core.MediaType;
 
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.store.Directory;
 
 import net.bleujin.searcher.SearchController;
-import net.bleujin.searcher.reader.InfoReader;
-import net.bleujin.searcher.reader.InfoReader.InfoHandler;
+import net.bleujin.searcher.reader.InfoHandler;
 import net.ion.framework.parse.gson.JsonObject;
 import net.ion.framework.util.MapUtil;
 import net.ion.radon.core.ContextParam;
@@ -27,17 +27,14 @@ public class InfoLet {
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public JsonObject info(@ContextParam("SDC") SearchController sdc, @DefaultValue("html") @PathParam("format") String format) throws Exception {
-		InfoReader reader = sdc.infoReader() ;
-		
-		Map<String, Object> infoMap = reader.info(new InfoHandler<Map<String, Object>>() {
+		Map<String, Object> infoMap = sdc.info(new InfoHandler<Map<String, Object>>() {
 			@Override
-			public Map<String, Object> view(IndexReader ireader, DirectoryReader dreader) throws IOException {
+			public Map<String, Object> view(IndexReader ireader, Directory dir) throws IOException {
 				Map<String, Object> result = MapUtil.newMap() ;
 				
-				result.put("directory", dreader.directory()) ;
-				result.put("current version", dreader.getVersion()) ;
-				result.put("indexExists", DirectoryReader.indexExists(dreader.directory())) ;
-				result.put("lastModified", DirectoryReader.listCommits(dreader.directory())) ;
+				result.put("directory", dir) ;
+				result.put("indexExists", DirectoryReader.indexExists(dir)) ;
+				result.put("commits", DirectoryReader.listCommits(dir)) ;
 				result.put("maxDoc", ireader.maxDoc()) ;
 				result.put("numDoc", ireader.numDocs()) ;
 				

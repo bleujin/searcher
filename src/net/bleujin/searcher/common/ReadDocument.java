@@ -26,6 +26,7 @@ public class ReadDocument extends AbDocument {
 	private static final long serialVersionUID = 2104871499687824141L;
 	private Document doc;
 	private int docId;
+	private String highlightString = "";
 
 	ReadDocument(int docId, Document doc) {
 		this.docId = docId ;
@@ -140,5 +141,15 @@ public class ReadDocument extends AbDocument {
 		return doc.get(IKeywordField.DocKey);
 	}
 
+	public String highlightString() {
+		return highlightString;
+	}
+
+	public ReadDocument highlightString(String highlightString) {
+		this.highlightString = highlightString ;
+		return this ;
+	}
+	
+	
 	
 }

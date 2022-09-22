@@ -38,7 +38,7 @@ public class TestKoreanAnalyzer extends AbTestCase {
 		    Debug.line(startOffset, endOffset, term);
 		}
 		
-		Debug.line(new QueryParser("e플러스", new KoreanAnalyzer()).parse("e플러스")) ;
+		Debug.line(new QueryParser("field", new KoreanAnalyzer()).parse("e플러스")) ;
 	}
 	
 	public void testSearchQuery() throws Exception{

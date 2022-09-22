@@ -43,18 +43,16 @@ public class TestMultiSearcher extends AbTestCase {
 
 	public void testSearchLucene() throws Exception {
 		
-		
-		
-		MultiReader mreader = new MultiReader(c1.indexReader(), c2.indexReader());
-		IndexSearcher isearcher = new IndexSearcher(mreader);
-
-		Query query = new MatchAllDocsQuery();
-		TopDocs tdoc = isearcher.search(query, 100);
-		ScoreDoc[] sdoc = tdoc.scoreDocs;
-		for (ScoreDoc d : sdoc) {
-			Document fdoc = isearcher.doc(d.doc);
-			Debug.line(fdoc);
-		}
+//		MultiReader mreader = new MultiReader(c1.indexReader(), c2.indexReader());
+//		IndexSearcher isearcher = new IndexSearcher(mreader);
+//
+//		Query query = new MatchAllDocsQuery();
+//		TopDocs tdoc = isearcher.search(query, 100);
+//		ScoreDoc[] sdoc = tdoc.scoreDocs;
+//		for (ScoreDoc d : sdoc) {
+//			Document fdoc = isearcher.doc(d.doc);
+//			Debug.line(fdoc);
+//		}
 		
 //		c1.newSearcher().search("").debugPrint(); 
 	}

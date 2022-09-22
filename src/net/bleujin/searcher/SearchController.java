@@ -8,6 +8,7 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
@@ -19,10 +20,11 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 
+import net.bleujin.searcher.extend.Suggester;
 import net.bleujin.searcher.index.IndexConfig;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
-import net.bleujin.searcher.reader.InfoReader;
+import net.bleujin.searcher.reader.InfoHandler;
 import net.bleujin.searcher.search.SearchConfig;
 import net.bleujin.searcher.search.SearchJob;
 import net.bleujin.searcher.search.SearchResponse;
@@ -190,21 +192,8 @@ public class SearchController implements Closeable{
 		}) ;
 	}
 	
-	public InfoReader infoReader() throws IOException {
-		return search(session ->{
-			return session.infoReader() ;
-		}) ;
-	}
-
-	public IndexReader indexReader() throws IOException {
-		return search(session ->{
-			return session.indexReader() ;
-		}) ;
-	}
-
-	
 	private void forceOlderClose() {
-		if (this.olderSearcher != null) {
+		if (this.olderSearcher != null && this.olderSearcher.getIndexReader() != null) {
 			try {
 				this.olderSearcher.getIndexReader().close();
 			} catch (IOException ignore) {
@@ -220,5 +209,29 @@ public class SearchController implements Closeable{
 		return new Searcher(this);
 	}
 
+
+	public <T> T info(InfoHandler<T> infoHandler) throws IOException {
+		return search(session ->{
+			T result = infoHandler.view(session.indexReader(), dir());
+			return result ;
+		}) ;
+	}
+	
+
+	
+	
+	
+	
+	
+	private Suggester suggester = null ;
+	public synchronized Suggester newSuggester(Analyzer analyzer) {
+		if (suggester == null){
+			this.suggester = new Suggester(this, analyzer);
+		}
+		return suggester ;
+	}
+	public Suggester newSuggester() {
+		return newSuggester(this.indexConfig().indexAnalyzer()) ;
+	}
 
 }

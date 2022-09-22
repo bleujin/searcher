@@ -10,6 +10,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
+import org.apache.lucene.search.highlight.SimpleHTMLFormatter;
 import org.apache.lucene.store.Directory;
 
 import com.google.common.collect.HashMultimap;
@@ -32,6 +33,7 @@ public class SearchConfig {
 	private final List<PostProcessor> postListeners = new ArrayList<PostProcessor>();
 	private final List<PreProcessor> preListeners = new ArrayList<PreProcessor>();
 	private SetMultimap<SortField.Type, String> definedFieldType = HashMultimap.create() ;
+	private SimpleHTMLFormatter formatter = new SimpleHTMLFormatter("<span class='matched'>", "</span>");
 
 	private SearchConfig(SearchController sc, Directory dir) {
 		this.sc = sc ;
@@ -48,6 +50,15 @@ public class SearchConfig {
 
 	public Directory dir() {
 		return dir;
+	}
+	
+	public SearchConfig formatter(SimpleHTMLFormatter formatter) {
+		this.formatter = formatter ;
+		return this ;
+	}
+	
+	public SimpleHTMLFormatter formatter() {
+		return formatter ;
 	}
 
 	public SearchConfig numFieldType(String... fieldNames) {

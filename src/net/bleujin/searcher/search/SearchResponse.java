@@ -9,7 +9,6 @@ import org.apache.lucene.search.ScoreDoc;
 import com.google.common.base.Predicate;
 
 import net.bleujin.searcher.common.ReadDocument;
-import net.bleujin.searcher.extend.BaseSimilarity;
 import net.ion.framework.db.Page;
 import net.ion.framework.util.Debug;
 import net.ion.framework.util.ListUtil;
@@ -25,14 +24,14 @@ public class SearchResponse {
 	private long endTime;
 
 	private SearchResponse(SearchSession ssession, SearchRequest sreq, List<Integer> docIds, long totalCount, long startTime) {
-		this.ssession = ssession ;
-		this.sreq = sreq ;
+		this.ssession = ssession;
+		this.sreq = sreq;
 		this.startTime = startTime;
 		this.endTime = System.currentTimeMillis();
 		this.docIds = docIds;
 		this.totalCount = totalCount;
 	}
-	
+
 	public static SearchResponse create(SearchSession ssession, SearchRequest sreq, ScoreDoc[] docs, long totalCount, long startTime) throws IOException {
 		return new SearchResponse(ssession, sreq, makeDocument(sreq, docs), totalCount, startTime);
 	}
@@ -43,45 +42,45 @@ public class SearchResponse {
 		for (int i = sreq.skip(); i < Math.min(sreq.limit(), docIds.length); i++) {
 			result.add(docIds[i].doc);
 		}
-		
+
 		return result;
 	}
 
 	public List<ReadDocument> getDocument() throws IOException {
 		List<ReadDocument> result = ListUtil.newList();
-		
-		for(int docId : docIds) {
-			result.add(ssession.readDocument(docId, sreq)) ;
+
+		for (int docId : docIds) {
+			ReadDocument rdoc = ssession.readDocument(docId, sreq);
+			result.add(rdoc);
 		}
 		return result;
 	}
-	
-	public SearchResponse filter(Predicate<ReadDocument> predic) throws IOException{
-		List<Integer> docIds = ListUtil.newList() ;
+
+	public SearchResponse filter(Predicate<ReadDocument> predic) throws IOException {
+		List<Integer> docIds = ListUtil.newList();
 		for (ReadDocument rdoc : getDocument()) {
-			if (predic.apply(rdoc)){
-				docIds.add(rdoc.docId()) ;
+			if (predic.apply(rdoc)) {
+				docIds.add(rdoc.docId());
 			}
 		}
-		return new SearchResponse(ssession, sreq, docIds, docIds.size(), startTime) ;
+		return new SearchResponse(ssession, sreq, docIds, docIds.size(), startTime);
 	}
-	
 
 	public PageResponse getDocument(Page page) {
 		List<Integer> result = ListUtil.newList();
-		
+
 		for (int i = page.getStartLoc(); i < Math.min(page.getEndLoc(), docIds.size()); i++) {
 			result.add(docIds.get(i));
 		}
-		
+
 		return PageResponse.create(this, result, page, docIds);
 	}
-	
+
 	public ReadDocument documentById(int docId) throws IOException {
-		return ssession.readDocument(docId, sreq) ;
+		return ssession.readDocument(docId, sreq);
 	}
 
-	public ReadDocument documentById(final String docIdValue) {
+	public ReadDocument documentById(final String docIdValue) throws IOException {
 		return eachDoc(new EachDocHandler<ReadDocument>() {
 			@Override
 			public ReadDocument handle(EachDocIterator iter) {
@@ -94,23 +93,22 @@ public class SearchResponse {
 			}
 		});
 	}
-	
+
 	public ReadDocument preDocBy(ReadDocument doc) throws IOException {
-		for(int i = 1 ; i <docIds.size() ; i++){
-			if (docIds.get(i) == doc.docId()) return documentById(docIds.get(i-1)) ;
+		for (int i = 1; i < docIds.size(); i++) {
+			if (docIds.get(i) == doc.docId())
+				return documentById(docIds.get(i - 1));
 		}
-		return null ;
+		return null;
 	}
-	
+
 	public ReadDocument nextDocBy(ReadDocument doc) throws IOException {
-		for(int i = 0 ; i <docIds.size()-1 ; i++){
-			if (docIds.get(i) == doc.docId()) return documentById(docIds.get(i+1)) ;
+		for (int i = 0; i < docIds.size() - 1; i++) {
+			if (docIds.get(i) == doc.docId())
+				return documentById(docIds.get(i + 1));
 		}
-		return null ;
+		return null;
 	}
-	
-	
-	
 
 	public ReadDocument first() throws IOException {
 		List<ReadDocument> list = getDocument();
@@ -128,7 +126,6 @@ public class SearchResponse {
 	public SearchRequest request() {
 		return sreq;
 	}
-	
 
 	public XML toXML() {
 		XML result = new XML("response");
@@ -148,8 +145,8 @@ public class SearchResponse {
 	public void debugPrint() {
 		eachDoc(EachDocHandler.DEBUG);
 	}
-	
-	public void debugPrint(final String... fields) throws IOException {
+
+	public void debugPrint(final String... fields) {
 		eachDoc(new EachDocHandler<Void>() {
 
 			@Override
@@ -167,7 +164,7 @@ public class SearchResponse {
 			}
 		});
 	}
-	
+
 	public <T> T eachDoc(EachDocHandler<T> handler) {
 		EachDocIterator iter = new EachDocIterator(ssession, sreq, docIds);
 		return handler.handle(iter);
@@ -179,14 +176,6 @@ public class SearchResponse {
 
 	public SearchSession searchSession() {
 		return ssession;
-	}
-
-	public DocHighlighter createHighlighter(String savedFieldName, String matchString){
-		return new DocHighlighter(this, savedFieldName, matchString) ;
-	}
-
-	public BaseSimilarity similarity(ReadDocument target) {
-		return new BaseSimilarity(this, target);
 	}
 
 	public Integer[] docIds() {

@@ -77,7 +77,7 @@ public class TestQueryParser extends AbTestCase{
 			}
 		}) ;
 		RenameQueryParser qparser = new RenameQueryParser("age", new StandardAnalyzer()).renameField("myname", "name") ;
-		SearchResponse sres = new Searcher(sdc, qparser).createRequest("num:[2 TO 12]").find() ;
+		SearchResponse sres = new Searcher(sdc).parser(qparser).createRequest("num:[2 TO 12]").find() ;
 		sres.debugPrint();
 	}
 		

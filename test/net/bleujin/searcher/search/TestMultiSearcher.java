@@ -1,18 +1,10 @@
 package net.bleujin.searcher.search;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
-import org.apache.lucene.index.MultiReader;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.MatchAllDocsQuery;
-import org.apache.lucene.search.Query;
-import org.apache.lucene.search.ScoreDoc;
-import org.apache.lucene.search.TopDocs;
 
 import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.SearchController;
 import net.bleujin.searcher.SearchControllerConfig;
-import net.ion.framework.util.Debug;
 
 public class TestMultiSearcher extends AbTestCase {
 
@@ -41,20 +33,15 @@ public class TestMultiSearcher extends AbTestCase {
 		assertEquals(2, c2.newSearcher().search("").size());
 	}
 
-	public void testSearchLucene() throws Exception {
+	public void testMultiSearchFrom() throws Exception {
 		
-//		MultiReader mreader = new MultiReader(c1.indexReader(), c2.indexReader());
-//		IndexSearcher isearcher = new IndexSearcher(mreader);
-//
-//		Query query = new MatchAllDocsQuery();
-//		TopDocs tdoc = isearcher.search(query, 100);
-//		ScoreDoc[] sdoc = tdoc.scoreDocs;
-//		for (ScoreDoc d : sdoc) {
-//			Document fdoc = isearcher.doc(d.doc);
-//			Debug.line(fdoc);
-//		}
+	
+		// c1.newSearcher(c2).createRequest("").find().debugPrint(); 
+		assertEquals(5, c1.newSearcher(c2).createRequest("").find().totalCount()) ; // 3+2
+		assertEquals(7, c1.newSearcher(c2, c2).createRequest("").find().totalCount()) ; // 3+2+2
 		
-//		c1.newSearcher().search("").debugPrint(); 
+		
+		c1.newSearcher(c2).createRequest("").skip(3).find().debugPrint(); 
 	}
 	
 }

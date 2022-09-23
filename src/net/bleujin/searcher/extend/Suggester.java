@@ -21,7 +21,7 @@ public class Suggester {
 	
 	public Suggester(SearchController central, Analyzer analyzer) {
 		this.sdc = central ;
-		this.inner = new AnalyzingSuggester(sdc.dir(), "temp", analyzer);
+		this.inner = new AnalyzingSuggester(sdc.dir(), "suggester_temp", analyzer);
 	}
 	
 	

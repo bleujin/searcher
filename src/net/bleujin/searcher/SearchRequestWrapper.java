@@ -22,7 +22,6 @@ import net.ion.framework.util.SetUtil;
 public class SearchRequestWrapper {
 
 	private Searcher searcher;
-	private SearchController sdc;
 	private Query query;
 	private SearchConfig sconfig;
 	private Set<SortField> sortFields = SetUtil.create() ;
@@ -33,7 +32,6 @@ public class SearchRequestWrapper {
 
 	SearchRequestWrapper(Searcher searcher, SearchController sdc, Query query) {
 		this.searcher = searcher ;
-		this.sdc = sdc ;
 		this.query = query ;
 		this.sconfig = SearchConfig.create(sdc) ;
 		this.sconfig.addPreListener(searcher.preListeners().toArray(new PreProcessor[0])) ;
@@ -53,13 +51,9 @@ public class SearchRequestWrapper {
 	}
 	
 	public SearchResponse find() throws IOException {
-		
-		return sdc.search(sconfig, this);
+		return searcher.search(sconfig, this) ;
 	}
 
-	
-	
-	
 	public SearchRequestWrapper ascending(String field) {
 		if (sconfig.numFields().contains(field)) {
 			sortFields.add(new SortField(field, Type.LONG)) ;

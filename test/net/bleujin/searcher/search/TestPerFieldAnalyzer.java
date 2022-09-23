@@ -115,7 +115,7 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 		TopScoreDocCollector collector = TopScoreDocCollector.create(hitsPerPage, 10);
 		searcher.search(q, collector);
 		ScoreDoc[] hits = collector.topDocs().scoreDocs;
-		System.out.println("Found " + hits.length + " hits. query:" + q);
+		Debug.debug("Found " + hits.length + " hits. query:" + q);
 		for (int i = 0; i < hits.length; ++i) {
 			int docId = hits[i].doc;
 			Document d = searcher.doc(docId);

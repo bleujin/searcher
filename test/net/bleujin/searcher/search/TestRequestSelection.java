@@ -20,7 +20,7 @@ public class TestRequestSelection extends AbTestCase {
 		Searcher searcher = sdc.newSearcher() ;
 		
 		ReadDocument doc = searcher.createRequest("").selections("name").findOne() ;
-		Debug.debug(doc.asString("name"), doc.asString("age"), doc, doc.IdString()) ; // if setted selection, ignore key too
+		Debug.debug(doc.asString("name"), doc.asString("age"), doc, doc.IdString()) ; 
 		
 	}
 	

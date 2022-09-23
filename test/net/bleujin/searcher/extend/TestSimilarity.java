@@ -24,7 +24,7 @@ public class TestSimilarity extends AbTestCase {
 		
 	}
 	
-	public void testFindSimilaryDoc() throws Exception {
+	public void testFindSitmilaryDoc() throws Exception {
 		sdc.index(new IndexJob<Void>() {
 			@Override
 			public Void handle(IndexSession isession) throws Exception {
@@ -37,9 +37,9 @@ public class TestSimilarity extends AbTestCase {
 		
 		SimilaryDocs sdocs = sdc.search(session ->{
 			ReadDocument fdoc = session.createRequestByKey("111").findOne() ;
-			SearchResponse sr = session.createRequest("").find() ;
+			SearchResponse targets = session.createRequest("").find() ;
 			
-			SimilaryDocs sd = session.similaryDocs(fdoc, "cook", sr) ;
+			SimilaryDocs sd = session.similaryDocs(fdoc, "cook", targets) ;
 			
 			return sd.limit(5).overWeight(0.01d);
 		}) ;

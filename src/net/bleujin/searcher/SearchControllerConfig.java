@@ -29,7 +29,6 @@ public class SearchControllerConfig {
 	private SearchControllerConfig(Directory dir) {
 		this.dir = dir ;
 	}
-
 	
 	public SearchController newBuild() throws IOException {
 		return build(OpenMode.CREATE_OR_APPEND) ;
@@ -47,7 +46,6 @@ public class SearchControllerConfig {
 	}
 
 	public SearchController build(OpenMode openMode) throws IOException {
-		SearchController result = new SearchController(this, this.dir, openMode);
 		
 		if (! DirectoryReader.indexExists(dir)) {
 			IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());  // index blank
@@ -60,6 +58,8 @@ public class SearchControllerConfig {
 				IOUtil.close(iwriter); 
 			}
 		}
+		
+		SearchController result = new SearchController(this, this.dir, openMode);
 		return result;
 	}
 

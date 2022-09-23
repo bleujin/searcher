@@ -1,5 +1,7 @@
 package net.bleujin.searcher;
 
+import static org.hamcrest.CoreMatchers.is;
+
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -33,18 +35,18 @@ import net.ion.framework.util.IOUtil;
 
 public class SearchController implements Closeable{
 
-	private SearchControllerConfig config;
-	private Directory dir;
-	private OpenMode openMode;
+	private final SearchControllerConfig config;
+	private final OpenMode openMode;
+	
 	private boolean isModified = true;
+	private DirectoryReader dreader = null ;
 	private IndexSearcher isearcher = null; // recycle searcher
-	private IndexSearcher olderSearcher = null;
 	private final ReadWriteLock locker = new ReentrantReadWriteLock() ;
 
-	SearchController(SearchControllerConfig config, Directory dir, OpenMode openMode) {
+	SearchController(SearchControllerConfig config, Directory dir, OpenMode openMode) throws IOException {
 		this.config = config;
-		this.dir = dir;
 		this.openMode = openMode;
+		this.dreader = DirectoryReader.open(dir) ;
 	}
 
 	public SearchControllerConfig sconfig() {
@@ -55,30 +57,32 @@ public class SearchController implements Closeable{
 		return locker ;
 	}
 	
-	public Directory dir() {
-		return dir;
-	}
-
 	public IndexConfig indexConfig() {
 		return IndexConfig.create(this);
 	}
 
 	public void close() throws IOException {
-		dir.close();
+		IOUtil.close(dreader);
+		IOUtil.close(dreader.directory()); 
 	}
 
+	public Directory dir() {
+		return this.dreader.directory();
+	}
+
+	
 	@Deprecated // OnlyTest
 	public void destroySelf() throws IOException { 
 		try {
 			IndexWriterConfig conf = new IndexWriterConfig() ;
-			IndexWriter indexWriter  = new IndexWriter(dir, conf);
+			IndexWriter indexWriter  = new IndexWriter(dir(), conf);
             indexWriter.deleteAll();
             indexWriter.commit();
             IOUtil.close(indexWriter);
 		} catch (IOException ignore) {
 			ignore.printStackTrace();
 		} finally {
-			dir.close();
+			close() ;
 		}
 	}
 
@@ -90,6 +94,7 @@ public class SearchController implements Closeable{
 
 	public synchronized void end() {
 		this.isModified = true;
+
 	}
 
 	private boolean isModified() {
@@ -122,8 +127,7 @@ public class SearchController implements Closeable{
 				lock.lock() ;
 				
 				indexSession = IndexSession.create(this, iconfig); // create indexWriter
-				final IndexSession inner = indexSession ;
-				rtn = indexJob.handle(inner);
+				rtn = indexJob.handle(indexSession);
 
 				indexSession.commit();
 			} catch (Throwable e) {
@@ -140,13 +144,6 @@ public class SearchController implements Closeable{
 		return result;
 	}
 	
-	
-	
-	
-	public <T> T search(SearchJob<T> searchJob) throws IOException {
-		SearchConfig sconfig = SearchConfig.create(this);
-		return search(sconfig, searchJob);
-	}
 
 	public SearchResponse search(final String query) throws IOException {
 		return search(session ->{
@@ -154,30 +151,36 @@ public class SearchController implements Closeable{
 		}) ;
 	}
 	
+	public <T> T search(SearchJob<T> searchJob) throws IOException {
+		SearchConfig sconfig = SearchConfig.create(this);
+		return search(currentSearcher(), sconfig, searchJob);
+	}
 	
-	SearchResponse search(SearchConfig sconfig, final SearchRequestWrapper wrequest) throws IOException {
-		return search(sconfig, session ->{
+
+	synchronized IndexSearcher currentSearcher() throws IOException {
+		if (isModified()) {
+			forceOlderClose();
+
+			this.dreader = DirectoryReader.open(dreader.directory());
+			this.isearcher = new IndexSearcher(dreader);
+			
+			reloaded();
+		}
+		return isearcher ;
+		
+	}
+
+	
+	SearchResponse search(IndexSearcher csearcher, SearchConfig sconfig, final SearchRequestWrapper wrequest) throws IOException {
+		return search(csearcher, sconfig, session ->{
 			return session.createRequest(wrequest).find() ;
 		}) ;
 	}
 	
 	
-	
-	<T> T search(SearchConfig sconfig, SearchJob<T> searchJob) throws IOException {
-		synchronized (this) { // if not modified, recycle IndexSearcher
-			if (isModified()) {
-				this.olderSearcher = this.isearcher;
-
-				
-				DirectoryReader dreader = DirectoryReader.open(sconfig.dir());
-				isearcher = new IndexSearcher(dreader);
-				reloaded();
-			}
-		}
-
-		SearchSession ssession = SearchSession.create(this, this.isearcher, sconfig); // create IndexSearcher
+	private <T> T search(IndexSearcher currentSearcher, SearchConfig sconfig, SearchJob<T> searchJob) throws IOException {
+		SearchSession ssession = SearchSession.create(this, currentSearcher, sconfig); // create IndexSearcher
 		T result = searchJob.handle(ssession);
-		forceOlderClose();
 		return result;
 	}
 	
@@ -193,10 +196,14 @@ public class SearchController implements Closeable{
 	}
 	
 	private void forceOlderClose() {
-		if (this.olderSearcher != null && this.olderSearcher.getIndexReader() != null) {
+		if (isearcher != null && isearcher.getIndexReader() != null) {
 			try {
-				this.olderSearcher.getIndexReader().close();
+				isearcher.getIndexReader().decRef();
 			} catch (IOException ignore) {
+				ignore.printStackTrace();
+			} finally {
+				IOUtil.close(isearcher.getIndexReader());
+				IOUtil.close(dreader);
 			}
 		}
 	}
@@ -209,6 +216,9 @@ public class SearchController implements Closeable{
 		return new Searcher(this);
 	}
 
+	public Searcher newSearcher(SearchController... appendController) {
+		return new Searcher(this, appendController) ;
+	}
 
 	public <T> T info(InfoHandler<T> infoHandler) throws IOException {
 		return search(session ->{
@@ -233,5 +243,8 @@ public class SearchController implements Closeable{
 	public Suggester newSuggester() {
 		return newSuggester(this.indexConfig().indexAnalyzer()) ;
 	}
+
+
+
 
 }

@@ -1,7 +1,9 @@
 package net.bleujin.searcher.search;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import org.apache.ecs.xml.XML;
 import org.apache.lucene.search.ScoreDoc;
@@ -9,6 +11,8 @@ import org.apache.lucene.search.ScoreDoc;
 import com.google.common.base.Predicate;
 
 import net.bleujin.searcher.common.ReadDocument;
+import net.bleujin.searcher.common.WriteDocument;
+import net.bleujin.searcher.index.IndexSession;
 import net.ion.framework.db.Page;
 import net.ion.framework.util.Debug;
 import net.ion.framework.util.ListUtil;
@@ -45,6 +49,7 @@ public class SearchResponse {
 
 		return result;
 	}
+	
 
 	public List<ReadDocument> getDocument() throws IOException {
 		List<ReadDocument> result = ListUtil.newList();
@@ -54,16 +59,6 @@ public class SearchResponse {
 			result.add(rdoc);
 		}
 		return result;
-	}
-
-	public SearchResponse filter(Predicate<ReadDocument> predic) throws IOException {
-		List<Integer> docIds = ListUtil.newList();
-		for (ReadDocument rdoc : getDocument()) {
-			if (predic.apply(rdoc)) {
-				docIds.add(rdoc.docId());
-			}
-		}
-		return new SearchResponse(ssession, sreq, docIds, docIds.size(), startTime);
 	}
 
 	public PageResponse getDocument(Page page) {
@@ -76,7 +71,7 @@ public class SearchResponse {
 		return PageResponse.create(this, result, page, docIds);
 	}
 
-	public ReadDocument documentById(int docId) throws IOException {
+	ReadDocument documentById(int docId) throws IOException {
 		return ssession.readDocument(docId, sreq);
 	}
 
@@ -92,22 +87,6 @@ public class SearchResponse {
 				throw new IllegalArgumentException("not found doc : " + docIdValue);
 			}
 		});
-	}
-
-	public ReadDocument preDocBy(ReadDocument doc) throws IOException {
-		for (int i = 1; i < docIds.size(); i++) {
-			if (docIds.get(i) == doc.docId())
-				return documentById(docIds.get(i - 1));
-		}
-		return null;
-	}
-
-	public ReadDocument nextDocBy(ReadDocument doc) throws IOException {
-		for (int i = 0; i < docIds.size() - 1; i++) {
-			if (docIds.get(i) == doc.docId())
-				return documentById(docIds.get(i + 1));
-		}
-		return null;
 	}
 
 	public ReadDocument first() throws IOException {
@@ -153,7 +132,7 @@ public class SearchResponse {
 			public Void handle(EachDocIterator iter) {
 				while (iter.hasNext()) {
 					ReadDocument next = iter.next();
-					List list = ListUtil.newList();
+					List<String> list = ListUtil.newList();
 					list.add(next.toString());
 					for (String field : fields) {
 						list.add(next.asString(field));
@@ -180,6 +159,69 @@ public class SearchResponse {
 
 	public Integer[] docIds() {
 		return docIds.toArray(new Integer[0]);
+	}
+
+	
+	Iterable<ReadDocument> readIterable() {
+		List<Integer> myDocIds = this.docIds ;
+		
+		return new Iterable<ReadDocument>() {
+			@Override
+			public Iterator<ReadDocument> iterator() {
+				Iterator<Integer> docIter = myDocIds.iterator() ;
+				
+				return new Iterator<ReadDocument>() {
+					public boolean hasNext() {
+						return docIter.hasNext();
+					}
+
+					public ReadDocument next() {
+						try {
+							return documentById(docIter.next()) ;
+						} catch (IOException e) {
+							throw new IllegalArgumentException(e.getCause()) ;
+						}
+					}
+				};
+			}
+			
+		};
+	}
+	
+
+	Iterable<WriteDocument> writeIterable(IndexSession isession) {
+		List<Integer> myDocIds = this.docIds ;
+		
+		return new Iterable<WriteDocument>() {
+			@Override
+			public Iterator<WriteDocument> iterator() {
+				Iterator<Integer> docIter = myDocIds.iterator() ;
+				
+				return new Iterator<WriteDocument>() {
+					public boolean hasNext() {
+						return docIter.hasNext();
+					}
+
+					public WriteDocument next() {
+						try {
+							ReadDocument rdoc = documentById(docIter.next());
+							return new WriteDocument(isession, rdoc.IdString(), rdoc.toLuceneDoc()) ;
+						} catch (IOException e) {
+							throw new IllegalArgumentException(e.getCause()) ;
+						}
+					}
+				};
+			}
+			
+		};
+	}
+	
+	public ReadStream readStream() {
+		return new ReadStream(ssession, StreamSupport.stream(this.readIterable().spliterator(), false)) ;
+	}
+
+	public WriteStream writeStream(IndexSession isession) {
+		return new WriteStream(isession, StreamSupport.stream(this.writeIterable(isession).spliterator(), false)) ;
 	}
 
 }

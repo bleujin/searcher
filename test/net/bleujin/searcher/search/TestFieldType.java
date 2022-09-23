@@ -26,13 +26,13 @@ public class TestFieldType extends AbTestCase {
 	public void testNumericSort() throws Exception {
 
 		sdc.search(session->{
-			session.createRequest("").ascendingNum("age").findOne().getField("age").numericValue().doubleValue() ;
+			session.createRequest("").ascendingNum("age").find().first().getField("age").numericValue().doubleValue() ;
 			
-			assertEquals(7, session.createRequest("").ascendingNum("age").findOne().asLong("age", 0)) ;
-			assertEquals(30, session.createRequest("").descendingNum("age").findOne().asLong("age", 30));
+			assertEquals(7, session.createRequest("").ascendingNum("age").find().first().asLong("age", 0)) ;
+			assertEquals(30, session.createRequest("").descendingNum("age").find().first().asLong("age", 30));
 			
 			session.searchConfig().numFieldType("age") ;
-			assertEquals(7, session.createRequest("").sort("age").findOne().asLong("age", 0)) ;
+			assertEquals(7, session.createRequest("").sort("age").find().first().asLong("age", 0)) ;
 			return null ;
 		}) ;
 	}

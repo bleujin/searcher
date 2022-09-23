@@ -20,11 +20,13 @@ import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 
 import net.bleujin.searcher.SearchController;
+import net.bleujin.searcher.SearchRequestWrapper;
 import net.bleujin.searcher.common.AbDocument.Action;
 import net.bleujin.searcher.common.FieldIndexingStrategy;
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.common.SearchConstant;
 import net.bleujin.searcher.common.WriteDocument;
+import net.bleujin.searcher.search.SearchRequest;
 import net.bleujin.searcher.search.SearchSession;
 import net.ion.framework.util.Debug;
 import net.ion.framework.util.IOUtil;
@@ -47,9 +49,6 @@ public class IndexSession {
 		this.scontroller = scontroller ;
 		this.iconfig = iconfig ;
 		this.fieldIndexingStrategy = FieldIndexingStrategy.create(iconfig);
-
-//		this.ssession = scontroller.search(searcher -> searcher) ;
-		
 	}
 
 	public static IndexSession create(SearchController scontroller, IndexConfig iconfig) throws IOException {
@@ -74,7 +73,7 @@ public class IndexSession {
 			IndexWriterConfig iwc = new IndexWriterConfig(iconfig.indexAnalyzer());
 			iconfig.attributes(iwc) ;
 			
-			iwc.setOpenMode(OpenMode.CREATE_OR_APPEND);
+			iwc.setOpenMode(OpenMode.APPEND);
 			this.iwriter = new IndexWriter(scontroller.dir(), iwc);
 			return this.iwriter ;
 		}
@@ -82,26 +81,26 @@ public class IndexSession {
 	
 	
 	Document findById(String docId) throws IOException{
-		ReadDocument first = searchSession().createRequest(new TermQuery(new Term(SearchConstant.DocKey, docId))).findOne();
+		ReadDocument first = searchSession().createRequest(new TermQuery(new Term(SearchConstant.DocKey, docId))).find().first();
 		return first == null ? null : first.toLuceneDoc() ;
 	}
 	
 	public WriteDocument loadDocument(String docId) throws IOException {
 		
-		ReadDocument rdoc = searchSession().createRequest(new TermQuery(new Term(SearchConstant.DocKey, docId))).findOne();
+		ReadDocument rdoc = searchSession().createRequest(new TermQuery(new Term(SearchConstant.DocKey, docId))).find().first();
 		Document findDoc = (rdoc == null) ? new Document() : rdoc.toLuceneDoc() ;
 		WriteDocument result = new WriteDocument(this, docId, findDoc);
 		
 		
-		List<String> numFieldName = ListUtil.newList(); // find numeric field
+		List<String> numFieldNames = ListUtil.newList(); // find numeric field
 		for(IndexableField field : findDoc.getFields()){
 			IndexableFieldType type = field.fieldType() ;
 			if ( (type.indexOptions() != IndexOptions.NONE) && field.numericValue() != null){
-				numFieldName.add(field.name()) ;
+				numFieldNames.add(field.name()) ;
 			}
 		}
 
-		for (String nfield : numFieldName) {
+		for (String nfield : numFieldNames) {
 			IndexableField field = findDoc.getField(nfield);
 			if (field == null)
 				continue;
@@ -113,16 +112,19 @@ public class IndexSession {
 
 
 	public WriteDocument loadDocument(String docId, boolean replaceValue, FieldLoadable floadable) throws IOException {
-		ReadDocument rdoc = searchSession().createRequest(new TermQuery(new Term(SearchConstant.DocKey, docId))).findOne();
+		ReadDocument rdoc = searchSession().createRequest(new TermQuery(new Term(SearchConstant.DocKey, docId))).find().first();
 		Document findDoc = (rdoc == null) ? new Document() : rdoc.toLuceneDoc() ;
 		WriteDocument result = new WriteDocument(this, docId, findDoc);
 		
 		return floadable.handle(result, findDoc);
 	}
 	
+	public SearchRequest createRequest(String query) throws IOException {
+		return searchSession().createRequest(query) ;
+	}
 	
 	private SearchSession searchSession() throws IOException {
-		if (this.ssession == null) this.ssession = scontroller.search(searcher -> searcher) ;
+		if (this.ssession == null) this.ssession = scontroller.search(ssession -> ssession) ;
 		return ssession ;
 	}
 	
@@ -258,6 +260,7 @@ public class IndexSession {
 			ignore.printStackTrace();
 		} 
 	}
+
 
 
 }

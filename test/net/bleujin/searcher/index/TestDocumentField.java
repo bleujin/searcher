@@ -19,7 +19,7 @@ public class TestDocumentField extends AbTestCase {
 		});
 
 		ReadDocument doc = sdc.search(session ->{
-			return session.createRequest("name:bleujin").findOne();
+			return session.createRequest("name:bleujin").find().first();
 		}) ;
 		
 		assertEquals(true, ArrayUtil.contains(doc.fieldNames(), "name"));

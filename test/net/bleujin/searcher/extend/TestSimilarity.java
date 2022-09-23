@@ -36,7 +36,7 @@ public class TestSimilarity extends AbTestCase {
 		}) ;
 		
 		SimilaryDocs sdocs = sdc.search(session ->{
-			ReadDocument fdoc = session.createRequestByKey("111").findOne() ;
+			ReadDocument fdoc = session.createRequestByKey("111").find().first() ;
 			SearchResponse targets = session.createRequest("").find() ;
 			
 			SimilaryDocs sd = session.similaryDocs(fdoc, "cook", targets) ;

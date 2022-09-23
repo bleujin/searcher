@@ -32,18 +32,6 @@ public class TestSearchResponse extends AbTestCase {
 		}) ;
 	}
 	
-	public void testPageList() throws Exception {
-		final SearchResponse sres = sdc.newSearcher().createRequest("int:[10 TO 50]").ascendingNum("int").find();
-		for(ReadDocument rdoc : sres.getDocument(Page.create(5, 2, 5))) {
-			Debug.line(rdoc);
-		}
-		
-		ReadDocument doc15 = sres.documentById("bleujin_23") ;
-		
-		Debug.line(sres.preDocBy(doc15), sres.nextDocBy(doc15)) ;
-		
-	}
-	
 	public void testInOpern() throws Exception {
 		Set<Query>querys = SetUtil.newSyncSet() ;
 		for (int artid : new int[]{30, 40, 50}) {

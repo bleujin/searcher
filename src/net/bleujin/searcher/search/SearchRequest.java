@@ -15,6 +15,7 @@ import org.apache.lucene.search.SortField;
 import org.apache.lucene.search.SortField.Type;
 
 import net.bleujin.searcher.SearchRequestWrapper;
+import net.bleujin.searcher.common.AbDocument;
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.extend.HighlightTerm;
 import net.ion.framework.db.Page;
@@ -34,7 +35,7 @@ public class SearchRequest {
 	private Set<String> columns = SetUtil.newSet() ;
 	private HighlightTerm highlightTerm = HighlightTerm.NONE ;
 
-	SearchRequest(SearchSession ssession, Query query) {
+	public SearchRequest(SearchSession ssession, Query query) {
 		this.ssession = ssession ;
 		this.query = query ;
 	}
@@ -42,13 +43,7 @@ public class SearchRequest {
 	public Query query() {
 		return query;
 	}
-	
-	public ReadDocument findOne() throws IOException {
-		
-		final List<ReadDocument> docs = find().getDocument();
-		if (docs.size() == 0) return null ;
-		return docs.get(0) ;
-	}
+
 
 	public SearchResponse find() throws IOException {
 		return ssession.search(this) ;

@@ -11,7 +11,7 @@ public interface SearchJob<T> {
 	public final static SearchJob<ReadDocument> SAMPLE_SEARCH = new SearchJob<ReadDocument>() {
 		@Override
 		public ReadDocument handle(SearchSession ssession) throws IOException {
-			ReadDocument wdoc = ssession.createRequest(new MatchAllDocsQuery()).findOne() ;
+			ReadDocument wdoc = ssession.createRequest(new MatchAllDocsQuery()).find().first() ;
 			return wdoc;
 		}
 	};

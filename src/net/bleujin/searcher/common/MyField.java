@@ -36,9 +36,9 @@ public class MyField {
 	public static MyField forWriteDoc(IndexableField ifield) {
 		if (ifield.fieldType().omitNorms()) { // keyword or dateformat
 			if (isDateFormat(ifield.stringValue())) {
-				return keyword(ifield.name(), ifield.stringValue()) ;
-			} else {
 				return date(ifield.name(), toDateString(ifield.stringValue())) ;
+			} else {
+				return keyword(ifield.name(), ifield.stringValue()) ;
 			}
 		} else { // number or text
 			if (ifield.numericValue() == null) { // text 
@@ -65,6 +65,14 @@ public class MyField {
 	}
 	public String stringValue() {
 		return ifield.stringValue() ;
+	}
+	
+	public Object value() {
+		if (ifield.numericValue() != null) {
+			return ifield.numericValue().longValue() ;
+		} else {
+			return ifield.stringValue() ;
+		}
 	}
 	
 	

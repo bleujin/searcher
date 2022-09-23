@@ -31,5 +31,18 @@ public abstract class AbDocument implements Serializable {
 	}
 
 	public abstract String idValue() ;
+	
+	public abstract boolean hasProperty(String name) ;
+	
+	public abstract Comparable property(String name) ;
+	
+	public abstract String asString(String name) ;
+	
+	public abstract long asLong(String name, long dftValue) ;
+
+	public String asString(String name, String dftValue) {
+		return asString(name) != null ? asString(name) : dftValue ;
+	}; 
+	
 
 }

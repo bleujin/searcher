@@ -78,7 +78,7 @@ public class TestRollback extends AbTestCase {
 		try {
 		sdc.index(isession -> {
 			isession.deleteAll() ;
-			throw new Exception("") ;
+			throw new Exception("when exception occured, rollbacked") ;
 		});
 		} catch(Exception ignore) {
 			

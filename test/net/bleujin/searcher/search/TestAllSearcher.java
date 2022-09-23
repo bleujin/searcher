@@ -29,6 +29,8 @@ public class TestAllSearcher extends TestSuite{
 		ts.addTestSuite(TestSearcherPaging.class) ;
 		ts.addTestSuite(TestSearchRequest.class);
 		ts.addTestSuite(TestSearchResponse.class);
+		ts.addTestSuite(TestSearchResponseEach.class);
+		ts.addTestSuite(TestSearchResponseStream.class);
 		ts.addTestSuite(TestSearchSchema.class);
 		ts.addTestSuite(TestSearchSort.class);
 		

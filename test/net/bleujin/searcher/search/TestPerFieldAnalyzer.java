@@ -55,7 +55,7 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 		});
 
 		sdc.search(session -> {
-			ReadDocument rdoc = session.createRequest("").findOne();
+			ReadDocument rdoc = session.createRequest("").find().first();
 			Debug.line(rdoc.getField("id"), rdoc.getField("name"));
 			Debug.debug(session.createRequest("id:태극기").query());
 			session.createRequest("id:태극기").find().debugPrint(); // not found
@@ -82,7 +82,7 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 			}
 		});
 		sdc.search(session -> {
-			ReadDocument rdoc = session.createRequest("").findOne();
+			ReadDocument rdoc = session.createRequest("").find().first();
 			assertEquals(0, session.createRequest("id:태극").find().size());
 			assertEquals(1, session.createRequest("name:태극").find().size());
 			return null;
@@ -119,7 +119,7 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 		for (int i = 0; i < hits.length; ++i) {
 			int docId = hits[i].doc;
 			Document d = searcher.doc(docId);
-			System.out.println((i + 1) + ". " + d.get("isbn") + "\t" + d.get("title"));
+			Debug.debug((i + 1) + ". " + d.get("isbn") + "\t" + d.get("title"));
 		}
 
 	}

@@ -5,6 +5,7 @@ import org.apache.lucene.index.IndexWriterConfig.OpenMode;
 import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.SearchController;
 import net.bleujin.searcher.SearchControllerConfig;
+import net.bleujin.searcher.Searcher;
 
 public class TestMultiSearcher extends AbTestCase {
 
@@ -38,10 +39,14 @@ public class TestMultiSearcher extends AbTestCase {
 	
 		// c1.newSearcher(c2).createRequest("").find().debugPrint(); 
 		assertEquals(5, c1.newSearcher(c2).createRequest("").find().totalCount()) ; // 3+2
-		assertEquals(7, c1.newSearcher(c2, c2).createRequest("").find().totalCount()) ; // 3+2+2
+		Searcher msearcher = c1.newSearcher(c2, c2);
 		
+		assertEquals(7, msearcher.createRequest("").find().totalCount()) ; // 3+2+2
+		c1.newSearcher(c2).createRequest("").skip(3).find().debugPrint();
 		
-		c1.newSearcher(c2).createRequest("").skip(3).find().debugPrint(); 
+		c2.index(createIndexJob("bleu", 2));
+		assertEquals(11, msearcher.createRequest("").find().totalCount()) ; // 3+4+4
+		
 	}
 	
 }

@@ -63,7 +63,15 @@ public class ReadDocument extends AbDocument {
 		if (field == null) return null ;
 		return field.stringValue() ;
 	}
+	
+	public boolean hasProperty(String name) {
+		return doc.get(name) != null;
+	}
 
+	public Comparable property(String name) {
+		return doc.getField(name).numericValue() != null ? doc.getField(name).numericValue().longValue() : doc.get(name) ; 
+	}
+	
 	public String asString(String name, String defaultString) {
 		return StringUtil.defaultIfEmpty(asString(name), defaultString) ;
 	}

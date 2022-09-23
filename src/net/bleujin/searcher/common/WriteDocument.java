@@ -23,6 +23,7 @@ import net.ion.framework.parse.gson.JsonObject;
 import net.ion.framework.parse.gson.JsonUtil;
 import net.ion.framework.util.HashFunction;
 import net.ion.framework.util.MapUtil;
+import net.ion.framework.util.NumberUtil;
 import net.ion.framework.util.ObjectId;
 import net.ion.framework.util.SetUtil;
 import net.ion.framework.util.StringUtil;
@@ -142,10 +143,23 @@ public class WriteDocument extends AbDocument {
 	}
 
 	
+	public boolean hasProperty(String name) {
+		return fields.get(name) != null ;
+	}
+	
+	public Comparable property(String name) {
+		return (Comparable) fields.get(name).value() ; 
+	}
+	
 	public String asString(String name) {
-		return StringUtil.toString(get(name)) ;
+		return get(name).stringValue() ;
 	}
 
+	public long asLong(String name, long dftValue) {
+		return NumberUtil.toLong(asString(name), dftValue);
+	}
+
+	
 	@Deprecated
 	public WriteDocument name(String name) {
 		add(MyField.text(ISEventName, name));

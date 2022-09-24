@@ -23,7 +23,7 @@ public class TestAllIndexer {
 		ts.addTestSuite(TestRollback.class);
 		ts.addTestSuite(TestWriteDocument.class);
 
-		ts.addTestSuite(TestPromise.class);
+		ts.addTestSuite(TestIndexTran.class);
 		
 		return ts;
 	}

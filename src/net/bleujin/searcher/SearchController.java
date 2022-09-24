@@ -1,10 +1,10 @@
 package net.bleujin.searcher;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -12,7 +12,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.DirectoryReader;
-import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
@@ -103,6 +102,22 @@ public class SearchController implements Closeable{
 
 	private void reloaded() {
 		this.isModified = false;
+	}
+	
+	public <T> CompletableFuture<T> indexTran(IndexJob<T> indexJob) {
+		return tran(indexJob, config.defaultExecutor()) ;
+	}
+	
+	public <T> CompletableFuture<T> tran(IndexJob<T> indexJob, ExecutorService eservice) {
+		if (eservice.isTerminated() || eservice.isShutdown()) return CompletableFuture.completedFuture(null) ;
+		
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				return index(indexJob) ;
+			} catch (IOException e) {
+				throw new IllegalStateException(e) ;
+			}
+		}, eservice) ;
 	}
 
 	public <T> T index(IndexJob<T> indexJob) throws IOException {
@@ -243,6 +258,7 @@ public class SearchController implements Closeable{
 	public Suggester newSuggester() {
 		return newSuggester(this.indexConfig().indexAnalyzer()) ;
 	}
+
 
 
 

@@ -39,11 +39,12 @@ public class TestMultiSearcher extends AbTestCase {
 	
 		// c1.newSearcher(c2).createRequest("").find().debugPrint(); 
 		assertEquals(5, c1.newSearcher(c2).createRequest("").find().totalCount()) ; // 3+2
+		
 		Searcher msearcher = c1.newSearcher(c2, c2);
-		
 		assertEquals(7, msearcher.createRequest("").find().totalCount()) ; // 3+2+2
+
 		c1.newSearcher(c2).createRequest("").skip(3).find().debugPrint();
-		
+
 		c2.index(createIndexJob("bleu", 2));
 		assertEquals(11, msearcher.createRequest("").find().totalCount()) ; // 3+4+4
 		

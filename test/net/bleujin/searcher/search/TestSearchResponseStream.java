@@ -10,14 +10,17 @@ public class TestSearchResponseStream extends AbTestCase{
 	public void testStreamFirst() throws Exception {
 		sdc.index(SAMPLE) ;
 		
-		// readStream(select && filtering)
+		// readStream(search && filtering)
 		sdc.newSearcher().createRequest("").find().readStream().gte("age", 20L).eq("name", "bleujin").forEach(System.out::println);
 
 	
 		
-		// writeStream(update )
+		// writeStream(search && filtering && update )
 		sdc.index(isession ->{
-			isession.createRequest("").find().writeStream(isession).gte("age", 30L).forEach(wdoc ->{
+			SearchSession session = isession.searchSession();
+			session.searchConfig() ;
+			
+			session.createRequest("").find().writeStream(isession).gte("age", 30L).forEach(wdoc ->{
 				try {
 					wdoc.keyword("name", "new " + wdoc.asString("name")).updateVoid() ;
 				} catch (IOException ignore) {

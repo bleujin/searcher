@@ -119,11 +119,7 @@ public class IndexSession {
 		return floadable.handle(result, findDoc);
 	}
 	
-	public SearchRequest createRequest(String query) throws IOException {
-		return searchSession().createRequest(query) ;
-	}
-	
-	private SearchSession searchSession() throws IOException {
+	public SearchSession searchSession() throws IOException {
 		if (this.ssession == null) this.ssession = scontroller.search(ssession -> ssession) ;
 		return ssession ;
 	}

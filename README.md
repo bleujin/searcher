@@ -36,6 +36,33 @@ apply lucene 9.3
 			}
 		}) ;
 		
-		sdc.close();
+	}
+
+	
+	public void testStreamFirst() throws Exception {
+		sdc.index(SAMPLE) ;
+		
+		// search && filtering
+		sdc.newSearcher().createRequest("").find().readStream().gte("age", 20L).eq("name", "bleujin").forEach(System.out::println);
+
+	
+		
+		// search && filtering && update 
+		sdc.index(isession ->{
+			SearchSession session = isession.searchSession();
+			session.searchConfig() ;
+			
+			session.createRequest("").find().writeStream(isession).gte("age", 30L).forEach(wdoc ->{
+				try {
+					wdoc.keyword("name", "new " + wdoc.asString("name")).updateVoid() ;
+				} catch (IOException ignore) {
+				}
+			});
+			
+			return null ;
+		}) ;
+
+		sdc.newSearcher().createRequest("").find().debugPrint("name", "age");
+		
 	}
 }

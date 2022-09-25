@@ -4,7 +4,12 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
+import org.apache.ecs.xml.XML;
+import org.apache.lucene.search.BooleanClause;
+import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortField;
@@ -16,6 +21,7 @@ import net.bleujin.searcher.search.SearchResponse;
 import net.bleujin.searcher.search.SortExpression;
 import net.bleujin.searcher.search.processor.PostProcessor;
 import net.bleujin.searcher.search.processor.PreProcessor;
+import net.bleujin.searcher.util.QueryBuilder;
 import net.ion.framework.util.MapUtil;
 import net.ion.framework.util.SetUtil;
 
@@ -29,6 +35,7 @@ public class SearchRequestWrapper {
 	private int offset = 100;
 	private Map<String, Object> param = MapUtil.newCaseInsensitiveMap() ;
 	private Set<String> columns = SetUtil.newSet() ;
+	private Query filter = Searcher.MatchAllDocsQuery ;
 
 	SearchRequestWrapper(Searcher searcher, SearchController sdc, Query query) {
 		this.searcher = searcher ;
@@ -42,6 +49,22 @@ public class SearchRequestWrapper {
 	public Query query() {
 		return query ;
 	}
+	
+	public SearchRequestWrapper filter(Query filter) {
+		this.filter = filter ;
+		return this ;
+	}
+
+	public Query filter() {
+		return filter;
+	}
+	
+	public Query compatableQuery() {
+		if (filter == Searcher.MatchAllDocsQuery) return query ;
+		return new BooleanQuery.Builder().add(new BooleanClause(query, Occur.MUST)).add(new BooleanClause(filter, Occur.MUST)).build() ; 
+	}
+	
+
 	
 	public ReadDocument findOne() throws IOException {
 		
@@ -150,6 +173,31 @@ public class SearchRequestWrapper {
 	public SearchConfig searchConfig() {
 		return sconfig ;
 	}
+
+
+	public XML toXML() {
+		XML request = new XML("request");
+		request.addElement(new XML("query").addElement(query.toString()));
+		request.addElement(new XML("filter").addElement(filter.toString()));
+		request.addElement(new XML("sort").addElement(sortFields.toString()));
+
+		XML page = new XML("page");
+		page.addAttribute("skip", String.valueOf(skip()));
+		page.addAttribute("offset", String.valueOf(offset()));
+		request.addElement(page);
+
+		XML params = new XML("params");
+		Set<Entry<String, Object>> entrys = param.entrySet();
+		for (Entry<String, Object> entry : entrys) {
+			String value = entry.getValue() == null ? "" : entry.getValue().toString();
+			params.addElement(new XML(entry.getKey()).addElement(value));
+		}
+		request.addElement(params);
+
+		return request;
+	}
+
+
 	
 
 }

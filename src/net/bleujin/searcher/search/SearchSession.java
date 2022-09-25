@@ -55,7 +55,7 @@ public class SearchSession {
 	}
 
 	public SearchRequest createRequest(SearchRequestWrapper wrequest) {
-		return createRequest(wrequest.query()).mapping(wrequest);
+		return createRequest(wrequest.compatableQuery()).mapping(wrequest);
 	}
 
 	public static SearchSession create(SearchController sc, IndexSearcher isearcher, SearchConfig sconfig) throws IOException {

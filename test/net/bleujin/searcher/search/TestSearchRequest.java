@@ -3,6 +3,7 @@ package net.bleujin.searcher.search;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.Query;
 
@@ -72,5 +73,13 @@ public class TestSearchRequest extends AbTestCase {
 			session.createRequest(query).find().debugPrint() ;
 			return null ;
 		}) ;
+	}
+	
+	public void testCompatableFilter() throws Exception {
+		QueryParser parser = searcher.parser() ;
+		assertEquals(1, searcher.createRequest("bleujin").find().totalCount()) ;
+		assertEquals(0, searcher.createRequest("bleujin").filter(parser.parse("age:20")).find().totalCount()) ;
+		
+		
 	}
 }

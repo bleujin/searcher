@@ -32,7 +32,7 @@ public class IndexConfig {
 	private IndexConfig(SearchController sc, FieldIndexingStrategy indexingStrategy) {
 		this.sc = sc ;
 		this.indexingStrategy = indexingStrategy ;
-		this.analyzer = sc.sconfig().analyzer() ;
+		this.analyzer = sc.sconfig().defaultAnalyzer() ;
 		this.es = sc.sconfig().defaultExecutor() ;
 	}
 

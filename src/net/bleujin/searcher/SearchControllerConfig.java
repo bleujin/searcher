@@ -13,6 +13,7 @@ import org.apache.lucene.index.DirectoryReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.IndexWriterConfig.OpenMode;
+import org.apache.lucene.queryparser.classic.QueryParser;
 import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
@@ -23,11 +24,14 @@ import net.ion.framework.util.WithinThreadExecutor;
 
 public class SearchControllerConfig {
 	private Analyzer defaultAnalyzer = new WhitespaceAnalyzer() ;
+	private QueryParser defaultParser;
 	private final Directory dir ;
-	private ExecutorService defaultExecutor = new WithinThreadExecutor() ;  
+	private ExecutorService defaultExecutor = new WithinThreadExecutor() ;
+	
 
 	private SearchControllerConfig(Directory dir) {
 		this.dir = dir ;
+		this.defaultParser = new QueryParser(SearchConstant.ISALL_FIELD, defaultAnalyzer) ;
 	}
 	
 	public SearchController newBuild() throws IOException {
@@ -45,6 +49,10 @@ public class SearchControllerConfig {
 		return new SearchControllerConfig(dir);
 	}
 
+	public SearchController build() throws IOException {
+		return build(OpenMode.CREATE_OR_APPEND) ;
+	}
+	
 	public SearchController build(OpenMode openMode) throws IOException {
 		
 		if (! DirectoryReader.indexExists(dir)) {
@@ -64,8 +72,13 @@ public class SearchControllerConfig {
 	}
 
 	
-	public Analyzer analyzer() {
+	public Analyzer defaultAnalyzer() {
 		return defaultAnalyzer ;
+	}
+	
+
+	public QueryParser defaultParser() {
+		return defaultParser ;
 	}
 
 	public SearchControllerConfig defaultAnalyzer(Analyzer analyzer) {

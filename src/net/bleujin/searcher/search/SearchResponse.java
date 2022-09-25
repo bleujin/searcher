@@ -224,4 +224,8 @@ public class SearchResponse {
 		return new WriteStream(isession, StreamSupport.stream(this.writeIterable(isession).spliterator(), false)) ;
 	}
 
+	public long startTime() {
+		return startTime ;
+	}
+
 }

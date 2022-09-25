@@ -25,7 +25,7 @@ public class TestIndexer extends TestCase {
 	}
 
 	public void testCreate() throws Exception {
-		assertEquals(StandardAnalyzer.class, sdc.sconfig().analyzer().getClass());
+		assertEquals(StandardAnalyzer.class, sdc.sconfig().defaultAnalyzer().getClass());
 	}
 
 	public void testAfterIndex() throws Exception {

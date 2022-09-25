@@ -227,11 +227,11 @@ public class SearchController implements Closeable{
 		return openMode;
 	}
 
-	public Searcher newSearcher() {
+	public Searcher newSearcher() throws IOException {
 		return new Searcher(this);
 	}
 
-	public Searcher newSearcher(SearchController... appendController) {
+	public Searcher newSearcher(SearchController... appendController) throws IOException {
 		return new Searcher(this, appendController) ;
 	}
 

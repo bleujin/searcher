@@ -20,6 +20,7 @@ import net.bleujin.searcher.common.IKeywordField;
 import net.bleujin.searcher.common.SearchConstant;
 import net.bleujin.searcher.search.SearchConfig;
 import net.bleujin.searcher.search.SearchResponse;
+import net.bleujin.searcher.search.SearchSession;
 import net.bleujin.searcher.search.processor.PostProcessor;
 import net.bleujin.searcher.search.processor.PreProcessor;
 import net.ion.framework.util.ListUtil;
@@ -32,20 +33,25 @@ public class Searcher {
 	private final List<PostProcessor> postListeners = new ArrayList<PostProcessor>();
 	private final List<PreProcessor> preListeners = new ArrayList<PreProcessor>();
 	private SearchController[] appendController;
+	public final static Query MatchAllDocsQuery = new MatchAllDocsQuery() ;
 
-	public Searcher(SearchController sdc) {
+	public Searcher(SearchController sdc) throws IOException {
 		this(sdc, new SearchController[0]) ;
 	}
 
-	public Searcher(SearchController sdc, SearchController[] appendController) {
+	public Searcher(SearchController sdc, SearchController[] appendController) throws IOException {
 		this.sdc= sdc ;
-		this.parser = new QueryParser(SearchConstant.ISALL_FIELD, sdc.sconfig().analyzer()) ;
+		this.parser = SearchConfig.create(sdc).queryParser()  ;
 		this.appendController = appendController ;
 	}
 
 	public Searcher parser(QueryParser parser) {
 		this.parser = parser ;
 		return this ;
+	}
+	
+	public QueryParser parser() {
+		return this.parser ;
 	}
 	
 	SearchResponse search(SearchConfig sconfig, SearchRequestWrapper searchRequest) throws IOException {
@@ -65,7 +71,7 @@ public class Searcher {
 
 	
 	public SearchRequestWrapper createRequest(String query) throws ParseException {
-		Query pquery = StringUtil.isBlank(query) ? new MatchAllDocsQuery() : parser.parse(query);
+		Query pquery = StringUtil.isBlank(query) ? MatchAllDocsQuery : parser.parse(query);
 		
 		return createRequest(pquery);
 	}
@@ -82,7 +88,7 @@ public class Searcher {
 
 	public SearchRequestWrapper createRequest(String query, Analyzer analyzer) throws ParseException {
 		QueryParser newParser = new QueryParser(SearchConstant.ISALL_FIELD, analyzer) ;
-		Query pquery = StringUtil.isBlank(query) ? new MatchAllDocsQuery() : newParser.parse(query);
+		Query pquery = StringUtil.isBlank(query) ? MatchAllDocsQuery : newParser.parse(query);
 		
 		return createRequest(pquery);
 	}
@@ -93,10 +99,6 @@ public class Searcher {
 
 	public SearchResponse search(String query) throws IOException, ParseException {
 		return createRequest(query).find() ;
-	}
-
-	public Query parseQuery(String query) throws ParseException {
-		return parser.parse(query);
 	}
 
 	public Searcher addPostListener(final PostProcessor processor) {

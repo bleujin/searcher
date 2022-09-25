@@ -39,7 +39,7 @@ public class SearchConfig {
 		this.sc = sc ;
 		this.dir = dir ;
 		this.es = sc.sconfig().defaultExecutor() ;
-		this.analyzer = sc.sconfig().analyzer() ;
+		this.analyzer = sc.sconfig().defaultAnalyzer() ;
 		this.defaultFieldName = sc.sconfig().defaultFieldName() ;
 	}
 

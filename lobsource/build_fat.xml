@@ -14,6 +14,17 @@
 	
 	<property name="baseDir" value="." />
 	<property name="targetDir" value="../lib" />
+	<property name="publishDir" value="./publish" />
+	<property name="binDir" value="../bin" />
+	<tstamp>
+	  <format property="TODAY_MY" pattern="MM/dd/yyyy hh:mm"/>
+	</tstamp>
+	
+	
+	<property name="manifest.main.class" value="" />
+	<property name="manifest.classpath" value="./" />
+	<property name="version.number" value="0"/>
+	<property name="build.number" value="1"/>
 	
     <target name="search930">
     	<delete file="${targetDir}/search930_fat.jar"></delete>
@@ -48,6 +59,25 @@
        		</zipgroupfileset>
         </jar>
     </target>
+	
+	<target name="publish">
+		<delete file="../publish/searcher_${version.number}.${build.number}.jar"></delete>
+		<jar destfile="../publish/searcher_${version.number}.${build.number}.jar">
+			<manifest>
+			  <attribute name="Built-By" value="${user.name}"/>
+			  <attribute name="Created-By" value="${user.name}"/>
+			  <!-- attribute name="Main-Class" value="${manifest.main.class}"/ -->
+			  <attribute name="Built-Date" value="${TODAY_MY}" />
+			  <attribute name="Class-Path" value="${manifes.classpath}" />
+			  <section name="common">
+			    <attribute name="Specification-Title" value="searcher"/>
+			    <attribute name="Specification-Version" value="${version.number}.${build.number}"/>
+			    <attribute name="Specification-Vendor" value="bleujin"/>
+			  </section>
+			</manifest>
+			<fileset dir="${binDir}/" includes="net/**" />
+		</jar>
+	</target>
 
 
 </project>

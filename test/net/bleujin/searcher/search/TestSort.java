@@ -6,6 +6,7 @@ import org.apache.lucene.search.SortField.Type;
 
 import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.SearchRequestWrapper;
+import net.bleujin.searcher.Searcher;
 import net.bleujin.searcher.index.IndexJob;
 import net.bleujin.searcher.index.IndexSession;
 import net.ion.framework.util.RandomUtil;
@@ -68,8 +69,9 @@ public class TestSort extends AbTestCase{
 				return null;
 			}
 		}) ;
-		SearchRequestWrapper sreq = sdc.newSearcher().createRequest("");
-		sreq.searchConfig().numFieldType("index") ;
+		Searcher searcher = sdc.newSearcher();
+		searcher.sconfig().numFieldType("index") ;
+		SearchRequestWrapper sreq = searcher.createRequest("");
 		
 		sreq.sort("index desc").find().debugPrint("index");
 	}

@@ -47,7 +47,7 @@ public class TestQueryParser extends AbTestCase{
 		}) ;
 		
 		String qstring = "id:/m/1234";
-		SearchRequestWrapper request = sdc.newSearcher().createRequest("id", "/m/1234") ;
+		SearchRequestWrapper request = sdc.newSearcher().createRequestByTerm("id", "/m/1234") ;
 		assertEquals(qstring, request.query().toString());
 	}
 	

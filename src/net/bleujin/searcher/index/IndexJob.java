@@ -1,7 +1,5 @@
 package net.bleujin.searcher.index;
 
-import java.io.IOException;
-
 import net.bleujin.searcher.common.WriteDocument;
 
 public interface IndexJob<T> {

@@ -30,4 +30,18 @@ public class TestReader extends AbTestCase {
 
 		// central.testIndexer(getAnalyzer()).end() ;
 	}
+	
+	public void testAfterClose() throws Exception {
+		sdc.index(IndexJob.SAMPLE_INSERT) ;
+		
+		sdc.info((ireader, dir) -> {
+			for (IndexCommit commit : DirectoryReader.listCommits(dir)) {
+				Debug.debug(commit.getDirectory(), commit.getFileNames(), commit.getSegmentsFileName(), commit.getUserData());
+				Debug.debug(commit.isDeleted(), commit.getGeneration());
+			}
+			return null;
+		});
+		
+		sdc.search("").debugPrint(); 
+	}
 }

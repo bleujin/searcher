@@ -4,41 +4,45 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 
+import javax.print.attribute.standard.Copies;
+
 import org.apache.lucene.analysis.Analyzer;
-import org.apache.lucene.analysis.cjk.CJKAnalyzer;
 import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.index.IndexWriterConfig;
 
+import net.bleujin.searcher.DefaultIndexConfig;
 import net.bleujin.searcher.SearchController;
 import net.bleujin.searcher.common.FieldIndexingStrategy;
-import net.bleujin.searcher.common.MyField;
 import net.bleujin.searcher.common.MyField.MyFieldType;
-import net.ion.framework.util.Debug;
 import net.ion.framework.util.MapUtil;
 
 public class IndexConfig {
 
 	private SearchController sc;
 	private FieldIndexingStrategy indexingStrategy;
-	private Analyzer analyzer ;
-	private String name = "NoName" ;
 	private ExecutorService es ;
+	
+	private PerFieldAnalyzer perFieldAnalyzer ;
+	private IndexFieldType indexFieldType;
+
+	
+	private String name = "NoName" ;
 	private int maxBufferedDocs = 0 ;
 	private double ramBufferSizeMB = 0D;
 	private Map<String, String> commitDatas = MapUtil.newMap() ;
-	private final Map<String, Analyzer> analMap = MapUtil.newCaseInsensitiveMap() ;
-	private final Map<String, MyField.MyFieldType> typeMap = MapUtil.newCaseInsensitiveMap() ;
 	
-	private IndexConfig(SearchController sc, FieldIndexingStrategy indexingStrategy) {
+	private IndexConfig(SearchController sc, DefaultIndexConfig defaultIndexConfig) {
 		this.sc = sc ;
-		this.indexingStrategy = indexingStrategy ;
-		this.analyzer = sc.sconfig().defaultAnalyzer() ;
-		this.es = sc.sconfig().defaultExecutor() ;
+		this.indexingStrategy = defaultIndexConfig.fieldIndexingStrategy() ;
+		this.es = defaultIndexConfig.executor() ;
+		
+		this.perFieldAnalyzer = defaultIndexConfig.perFieldAnalyzer().copyAnalyzer(defaultIndexConfig.analyzer()) ;
+		this.indexFieldType = defaultIndexConfig.copyIndexFieldTypeMap()  ;
 	}
 
 	
 	public static IndexConfig create(SearchController searchController) {
-		return new IndexConfig(searchController, FieldIndexingStrategy.DEFAULT) ;
+		return new IndexConfig(searchController, searchController.defaultIndexConfig()) ;
 	}
 	
 	public FieldIndexingStrategy indexingStrategy() {
@@ -60,11 +64,11 @@ public class IndexConfig {
 	}
 	
 	public Analyzer indexAnalyzer() {
-		return this.analyzer ;
+		return perFieldAnalyzer ; 
 	}
 
 	public IndexConfig indexAnalyzer(Analyzer analyzer) {
-		this.analyzer = analyzer ;
+		this.perFieldAnalyzer = perFieldAnalyzer.copyAnalyzer(analyzer) ;
 		return this ;
 	}
 
@@ -94,29 +98,23 @@ public class IndexConfig {
 
 
 	public IndexConfig fieldAnalyzer(String fieldName, Analyzer analyzer) {
-		analMap.put(fieldName, analyzer) ;
-		this.analyzer = new PerFieldAnalyzerWrapper(this.analyzer, this.analMap) ;
+		perFieldAnalyzer.defineAnalyzer(fieldName, analyzer) ;
 		return this;
 	}
 	
-	public IndexConfig fieldType(String fieldName, MyFieldType type) {
-		typeMap.put(fieldName, type) ;
-		return this ;
-	}
-
 	public IndexConfig removeFieldAnalyzer(String fieldName) {
-		if (! analMap.containsKey(fieldName)) return this ;
-		
-		analMap.remove(fieldName) ;
-		this.analyzer = new PerFieldAnalyzerWrapper(this.analyzer, this.analMap) ;
+		perFieldAnalyzer.removeField(fieldName) ;
 		return this;
 	}
 
-
-	public Map<String, MyFieldType> fieldTypeMap() {
-		return typeMap ;
+	public IndexConfig fieldType(String fieldName, MyFieldType type) {
+		indexFieldType.decideFieldType(fieldName, type) ;
+		return this ;
 	}
-
+	
+	public IndexFieldType indexFieldTypeMap() {
+		return indexFieldType ;
+	}
 
 	
 }

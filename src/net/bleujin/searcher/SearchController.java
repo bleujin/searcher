@@ -21,6 +21,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.store.Directory;
 
+import net.bleujin.searcher.common.FieldIndexingStrategy;
 import net.bleujin.searcher.extend.Suggester;
 import net.bleujin.searcher.index.IndexConfig;
 import net.bleujin.searcher.index.IndexJob;
@@ -41,11 +42,18 @@ public class SearchController implements Closeable{
 	private DirectoryReader dreader = null ;
 	private IndexSearcher isearcher = null; // recycle searcher
 	private final ReadWriteLock locker = new ReentrantReadWriteLock() ;
+	
+	private DefaultIndexConfig defaultIndexConfig;
+	private DefaultSearchConfig defaultSearchConfig;
 
 	SearchController(SearchControllerConfig config, Directory dir, OpenMode openMode) throws IOException {
 		this.config = config;
 		this.openMode = openMode;
 		this.dreader = DirectoryReader.open(dir) ;
+		
+		
+		this.defaultIndexConfig = new DefaultIndexConfig(config) ;
+		this.defaultSearchConfig = new DefaultSearchConfig(config) ;
 	}
 
 	public SearchControllerConfig sconfig() {
@@ -56,10 +64,6 @@ public class SearchController implements Closeable{
 		return locker ;
 	}
 	
-	public IndexConfig indexConfig() {
-		return IndexConfig.create(this);
-	}
-
 	public void close() throws IOException {
 		IOUtil.close(dreader);
 		IOUtil.close(dreader.directory()); 
@@ -256,9 +260,17 @@ public class SearchController implements Closeable{
 		return suggester ;
 	}
 	public Suggester newSuggester() {
-		return newSuggester(this.indexConfig().indexAnalyzer()) ;
+		return newSuggester(IndexConfig.create(this).indexAnalyzer()) ;
 	}
 
+	
+	public DefaultIndexConfig defaultIndexConfig() {
+		return defaultIndexConfig;
+	}
+
+	public DefaultSearchConfig defaultSearchConfig() {
+		return defaultSearchConfig;
+	}
 
 
 

@@ -3,8 +3,8 @@ package net.bleujin.searcher;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.apache.ecs.xml.XML;
 import org.apache.lucene.search.BooleanClause;
@@ -19,9 +19,6 @@ import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.search.SearchConfig;
 import net.bleujin.searcher.search.SearchResponse;
 import net.bleujin.searcher.search.SortExpression;
-import net.bleujin.searcher.search.processor.PostProcessor;
-import net.bleujin.searcher.search.processor.PreProcessor;
-import net.bleujin.searcher.util.QueryBuilder;
 import net.ion.framework.util.MapUtil;
 import net.ion.framework.util.SetUtil;
 
@@ -29,7 +26,7 @@ public class SearchRequestWrapper {
 
 	private Searcher searcher;
 	private Query query;
-	private SearchConfig sconfig;
+	private SearchConfig sconfig; // must readonly
 	private Set<SortField> sortFields = SetUtil.create() ;
 	private int skip = 0;
 	private int offset = 100;
@@ -40,9 +37,7 @@ public class SearchRequestWrapper {
 	SearchRequestWrapper(Searcher searcher, SearchController sdc, Query query) {
 		this.searcher = searcher ;
 		this.query = query ;
-		this.sconfig = SearchConfig.create(sdc) ;
-		this.sconfig.addPreListener(searcher.preListeners().toArray(new PreProcessor[0])) ;
-		this.sconfig.addPostListener(searcher.postListeners().toArray(new PostProcessor[0])) ;
+		this.sconfig = searcher.sconfig() ;
 	}
 
 
@@ -168,10 +163,6 @@ public class SearchRequestWrapper {
 	}
 	public Set<String> selectorField(){
 		return columns ;
-	}
-
-	public SearchConfig searchConfig() {
-		return sconfig ;
 	}
 
 

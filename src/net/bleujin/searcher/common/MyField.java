@@ -21,7 +21,7 @@ import net.ion.framework.util.StringUtil;
 public class MyField {
 
 	public enum MyFieldType {
-		Keyword, Number, Date, Text
+		Keyword, Number, Date, Text, Unknown
 	}
 	
 	private IndexableField ifield;
@@ -102,8 +102,13 @@ public class MyField {
 	
 	
 	public static MyField keyword(String name, String value) {
-		return new MyField(new StringField(name, value, Store.YES), MyFieldType.Keyword) ;
+		return keyword(name, value, Store.YES) ;
 	}
+
+	public static MyField keyword(String name, String value, Store store) {
+		return new MyField(new StringField(name, value, store), MyFieldType.Keyword) ;
+	}
+
 
 	public static MyField number(String name, long value) {
 		return new MyField(new NumericDocValuesField(name, value), MyFieldType.Number) ;
@@ -114,8 +119,13 @@ public class MyField {
 	}
 
 	public static MyField text(String name, String value) {
-		return new MyField(new VTextField(name, value, Store.YES), MyFieldType.Text);
+		return text(name, value, Store.YES) ;
 	}
+
+	public static MyField text(String name, String value, Store store) {
+		return new MyField(new VTextField(name, value, store), MyFieldType.Text);
+	}
+
 
 	public static MyField notext(String name, String value) {
 		return new MyField(new VTextField(name, value, Store.NO), MyFieldType.Text);

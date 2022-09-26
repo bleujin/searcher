@@ -8,7 +8,7 @@ import java.util.stream.StreamSupport;
 import org.apache.ecs.xml.XML;
 import org.apache.lucene.search.ScoreDoc;
 
-import com.google.common.base.Predicate;
+import com.google.common.base.Function;
 
 import net.bleujin.searcher.common.ReadDocument;
 import net.bleujin.searcher.common.WriteDocument;
@@ -160,6 +160,11 @@ public class SearchResponse {
 	public Integer[] docIds() {
 		return docIds.toArray(new Integer[0]);
 	}
+	
+	public <T> T transformer(Function<TransformerSearchKey, T> function) {
+		return function.apply(new TransformerSearchKey(this.ssession, docIds, sreq));
+	}
+
 
 	
 	Iterable<ReadDocument> readIterable() {

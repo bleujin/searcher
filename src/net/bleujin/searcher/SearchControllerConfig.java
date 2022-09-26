@@ -18,17 +18,17 @@ import org.apache.lucene.store.ByteBuffersDirectory;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.FSDirectory;
 
+import net.bleujin.searcher.common.IKeywordField;
 import net.bleujin.searcher.common.SearchConstant;
 import net.ion.framework.util.IOUtil;
 import net.ion.framework.util.WithinThreadExecutor;
 
 public class SearchControllerConfig {
 	private Analyzer defaultAnalyzer = new WhitespaceAnalyzer() ;
-	private QueryParser defaultParser;
-	private final Directory dir ;
 	private ExecutorService defaultExecutor = new WithinThreadExecutor() ;
 	
-
+	private QueryParser defaultParser;
+	private final Directory dir ;
 	private SearchControllerConfig(Directory dir) {
 		this.dir = dir ;
 		this.defaultParser = new QueryParser(SearchConstant.ISALL_FIELD, defaultAnalyzer) ;
@@ -43,6 +43,12 @@ public class SearchControllerConfig {
 		return new SearchControllerConfig(dir);
 	}
 
+	public static SearchControllerConfig newLocalFile(Path path) throws IOException {
+		Directory dir = FSDirectory.open(path) ;
+		return new SearchControllerConfig(dir);
+	}
+
+
 	public static SearchControllerConfig newRam() {
 		Directory dir = new ByteBuffersDirectory();
 		
@@ -56,7 +62,7 @@ public class SearchControllerConfig {
 	public SearchController build(OpenMode openMode) throws IOException {
 		
 		if (! DirectoryReader.indexExists(dir)) {
-			IndexWriterConfig iwc = new IndexWriterConfig(new StandardAnalyzer());  // index blank
+			IndexWriterConfig iwc = new IndexWriterConfig(defaultAnalyzer);  // index blank
 			iwc.setOpenMode(openMode) ;
 			IndexWriter iwriter = null ;
 			try {

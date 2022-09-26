@@ -50,5 +50,12 @@ public class TestSearcher extends AbTestCase {
 		List<ReadDocument> docs = searcher.createRequest("").find().getDocument();
 		assertEquals(100, docs.size()) ;
 	}
+	
+	public void testAfterIndexing() throws Exception {
+		assertEquals(100, searcher.search("").totalCount()) ;
+		sdc.index(SAMPLE) ;
+		assertEquals(103, searcher.search("").totalCount()) ;
+		
+	}
 }
 

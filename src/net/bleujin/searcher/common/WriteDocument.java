@@ -88,7 +88,7 @@ public class WriteDocument extends AbDocument {
 			if (field == null || isReservedField(field.name()))
 				continue;
 			
-			isession.indexConfig().fieldTypeMap().entrySet().forEach(entry -> {
+			isession.indexConfig().indexFieldTypeMap().entrySet().forEach(entry -> {
 				if (StringUtil.equalsIgnoreCase(field.name(), entry.getKey())) {
 					field.changeType(entry.getValue()) ;
 				}

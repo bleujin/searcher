@@ -33,7 +33,7 @@ public class TestIndexAnalyzer extends TestCase {
 		c.index(new IndexJob<Void>() {
 			@Override
 			public Void handle(IndexSession isession) throws Exception {
-				assertEquals(CJKAnalyzer.class, c.indexConfig().indexAnalyzer().getClass());
+				assertEquals(CJKAnalyzer.class, IndexConfig.create(c).indexAnalyzer().getClass());
 				
 				WriteDocument doc = isession.newDocument("bleujin");
 				doc.text("flag", "태극기가");

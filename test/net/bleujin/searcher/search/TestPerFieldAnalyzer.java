@@ -173,14 +173,22 @@ public class TestPerFieldAnalyzer extends AbTestCase {
 		Searcher searcher = sdc.newSearcher() ;
 		assertEquals(1, searcher.createRequest("").find().size()) ; 
 		
-		assertEquals(1, searcher.createRequest("name:태극기", new KeywordAnalyzer()).find().size()) ;
-		assertEquals(0, searcher.createRequest("name:태극기", new CJKAnalyzer()).find().size()) ;
-		assertEquals(1, searcher.createRequest("태극기", new CJKAnalyzer()).find().size()) ;
-		assertEquals(0, searcher.createRequest("태극기", new KeywordAnalyzer()).find().size()) ;
+		searcher.sconfig().queryAnalyzer(new KeywordAnalyzer()) ;
+		assertEquals(1, searcher.createRequest("name:태극기").find().size()) ;
 		
+		searcher.sconfig().queryAnalyzer(new CJKAnalyzer()) ;
+		assertEquals(0, searcher.createRequest("name:태극기").find().size()) ;
+		
+		searcher.sconfig().queryAnalyzer(new CJKAnalyzer()) ;
+		assertEquals(1, searcher.createRequest("태극기").find().size()) ;
 
-		assertEquals(1, searcher.createRequest("name:태극기", new PerFieldAnalyzerWrapper(new CJKAnalyzer(), MapUtil.<String, Analyzer>create("name", new KeywordAnalyzer()))).find().size()) ;
-		assertEquals(1, searcher.createRequest("태극기", analyzer).find().size()) ;
+		searcher.sconfig().queryAnalyzer(new KeywordAnalyzer()) ;
+		assertEquals(0, searcher.createRequest("태극기").find().size()) ;
+		
+		searcher.sconfig().queryAnalyzer(new CJKAnalyzer()) ;
+		searcher.sconfig().fieldAnalyzer("name", new KeywordAnalyzer()) ;
+		assertEquals(1, searcher.createRequest("name:태극기").find().size()) ;
+		assertEquals(1, searcher.createRequest("태극기").find().size()) ;
 
 	}
 }

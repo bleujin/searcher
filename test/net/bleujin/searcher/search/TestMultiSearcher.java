@@ -6,6 +6,7 @@ import net.bleujin.searcher.AbTestCase;
 import net.bleujin.searcher.SearchController;
 import net.bleujin.searcher.SearchControllerConfig;
 import net.bleujin.searcher.Searcher;
+import net.ion.framework.util.Debug;
 
 public class TestMultiSearcher extends AbTestCase {
 
@@ -47,6 +48,9 @@ public class TestMultiSearcher extends AbTestCase {
 
 		c2.index(createIndexJob("bleu", 2));
 		assertEquals(11, msearcher.createRequest("").find().totalCount()) ; // 3+4+4
+		
+		
+		Debug.line(msearcher.search("").searchSession().indexReader()) ;
 		
 	}
 	

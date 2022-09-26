@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="Make FatJar(experimental)" default="search930" basedir=".">
+<project name="Make FatJar(experimental)" default="publish" basedir=".">
 <!-- ====================================================================== 
      2022. 8. 21. 오전 10:59:20                                                        
 
@@ -23,23 +23,23 @@
 	
 	<property name="manifest.main.class" value="" />
 	<property name="manifest.classpath" value="./" />
-	<property name="version.number" value="9"/>
-	<property name="build.number" value="3"/>
+	<property name="version.number" value="8"/>
+	<property name="build.number" value="11"/>
 	
-    <target name="search930">
-    	<delete file="${targetDir}/search930_fat.jar"></delete>
-        <jar destfile="${targetDir}/search930_fat.jar">
-        	<zipgroupfileset dir="${basedir}\search930" id="id">
+    <target name="lucene811">
+    	<delete file="${targetDir}/lucene811_fat.jar"></delete>
+        <jar destfile="${targetDir}/lucene811_fat.jar">
+        	<zipgroupfileset dir="${basedir}\lucene811" id="id">
 			    <include name="*.jar"/>
 			    <exclude name="META-INF/*.SF"/>
 			</zipgroupfileset>
         </jar>
     </target>
 	
-    <target name="searchextend">
-    	<delete file="${targetDir}/searchextend_fat.jar"></delete>
-        <jar destfile="${targetDir}/searchextend_fat.jar">
-        	<zipgroupfileset dir="${basedir}\searchextend" id="id">
+    <target name="lucene811_extend">
+    	<delete file="${targetDir}/lucene811_extend_fat.jar"></delete>
+        <jar destfile="${targetDir}/lucene811_extend_fat.jar">
+        	<zipgroupfileset dir="${basedir}\lucene811_extend" id="id">
 			    <include name="*.jar"/>
 			    <exclude name="META-INF/*.SF"/>
 			</zipgroupfileset>

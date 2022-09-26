@@ -2,12 +2,7 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="test"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-16">
-		<attributes>
-			<attribute name="module" value="true"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry kind="lib" path="lib/search930_fat.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="lib" path="lib/aclient_0.5.jar"/>
 	<classpathentry kind="lib" path="lib/aradon311_0.9.jar"/>
 	<classpathentry kind="lib" path="lib/common_apache_fat.jar"/>
@@ -16,7 +11,8 @@
 	<classpathentry kind="lib" path="lib/iframework_2.4.jar"/>
 	<classpathentry kind="lib" path="lib/jsr311_fat.jar"/>
 	<classpathentry kind="lib" path="lib/search_util_fat.jar"/>
-	<classpathentry kind="lib" path="lib/searchextend_fat.jar"/>
+	<classpathentry kind="lib" path="lib/lucene811_extend_fat.jar"/>
+	<classpathentry kind="lib" path="lib/lucene811_fat.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

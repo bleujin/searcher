@@ -1,5 +1,5 @@
 # searcher
-apply lucene 9.3(with jdk 1.8)
+apply lucene 8.11(with jdk 1.8)
 
 {
 

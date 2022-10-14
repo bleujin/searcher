@@ -6,6 +6,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -143,7 +144,7 @@ public class SearchController implements Closeable{
 			IndexSession indexSession = null;
 			T rtn = null ;
 			try {
-				lock.lock() ;
+				lock.tryLock(10L, TimeUnit.SECONDS) ;
 				
 				indexSession = IndexSession.create(this, iconfig); // create indexWriter
 				rtn = indexJob.handle(indexSession);
